@@ -1,0 +1,88 @@
+# GC mass estimator
+
+GCmcmc <- function(init, mydat, logDF, priors, N, transform.pars, propDF, thinning=1, progressBar=TRUE, parnames = NULL, ...){
+  
+  # check to make sure that initial paramters are OK with the priors
+  testpriors = sum( log( priors( pars = transform.pars(init), ... ) ) )
+
+  if( any( !is.finite(testpriors) ) ){ stop("bad initial model parameters for priors")}
+  
+  # check to make sure that initial guess of parameters are not bad
+  testpars = logDF( pars=init, dat=mydat, transform.pars = transform.pars )
+
+  
+  if( any( !is.finite(testpars) ) ){ stop("bad initial model parameters") }
+  
+
+  # get number of data points
+  ndat = nrow(mydat)
+  
+  # get number of parameters
+  npars = length(init)
+  
+  # set up chain
+  chain = matrix( ncol=npars, nrow=N )
+  chain[1, ] = init
+  
+  # counter to keep track of acceptances
+  accept = 0
+  
+  # make a progress bar if asked for
+  if( progressBar ){
+      pb <- txtProgressBar(min = 0, max = N*thinning, style = 3)
+  }
+  
+  # make the Markov Chain
+  for( i in 1:(N*thinning) ){
+      
+      # draw trial model parameters
+      partry = init + propDF(...)
+      
+      # calculate priors for parameters
+      logpriorsinit = sum( log( priors( pars = transform.pars( init ), ... ) ) )
+      
+      logpriorstry = sum( log( priors( pars = transform.pars( partry ), ... ) ) )
+      
+      # if any of the new pars return 0 probability from prior, then reject points
+      if( any( !is.finite(logpriorstry) ) ){
+        
+        if(is.whole(i/thinning)){ chain[i/thinning, ] = init }
+        
+      }else{
+        
+        # difference of logs of likelihood*prior for init and partry
+        difflog = sum( logDF( pars=partry, dat=mydat, transform.pars=transform.pars )) + logpriorstry - sum( logDF( pars=init, dat=mydat, transform.pars=transform.pars )) - logpriorsinit 
+        
+        # if this gives a non-numeric answer, something is up, so open a browser
+        if( !is.numeric(difflog) ){ browser() }
+        
+        # if difflog is positive or if exponential of difflog is greater than a randomly generated number between 0 and 1, then accept
+        if( difflog > 0 | (exp(difflog) > runif(1)) ){
+          
+          if(is.whole(i/thinning)){ chain[i/thinning, ] = partry }
+          
+          init = partry
+          accept = accept + 1
+          
+        }else{ # otherwise, reject and stay in same place in parameter space
+          
+          if(is.whole(i/thinning)){ chain[i/thinning, ] = init }
+          
+        } 
+        
+      }
+      
+      # print progress bar if progressBar=TRUE
+      if( progressBar ){ setTxtProgressBar(pb, i/thinning) }
+      
+  } # close for loop that makes MC
+  
+  if( !is.null(parnames) ){ colnames(chain) = parnames }
+  
+  # OUTPUT    
+  out = list(chain=chain, acceptance.rate = accept/N, dat = mydat, priorfuncs=priors)
+  
+}
+
+  
+  
