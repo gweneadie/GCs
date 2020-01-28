@@ -46,6 +46,8 @@ adjustproposal = function(acceptrange = c(0.2,0.4), yourpatience, Nsteps, initco
     # new covariance matrix from previous run
     newcovmat = cov(combinedrun)
     
+    print(paste("count =", count, sep=" "))
+    
   }
   
   out = list(newpropsd = newcovmat, chain = combinedrun, patiencemeter = count, newinitlogpars = newinitlogpars, acceptancerate = newrun$acceptance.rate)
