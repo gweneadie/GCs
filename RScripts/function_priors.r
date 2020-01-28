@@ -12,6 +12,13 @@ lnorm.prior <- function( pars, ppars ){
   
 }
 
+########### Log10-Normal prior
+l10norm.prior <- function( pars, ppars ){
+  
+  log10(exp(1))  / ( pars*ppars[2]*sqrt(2*pi) ) * exp( - ( log10(pars) - ppars[1] )^2 / (2*ppars[2]^2)  )
+  
+}
+
 ######### Uniform (truncated) prior function
 singleunif.prior <- function( pars, ppars ){
   
