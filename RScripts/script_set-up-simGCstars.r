@@ -25,7 +25,7 @@ initpars = c(2.3,3.,50000.,4.)
 gbounds = c(1e-3, 3.5) # assuming truncated uniform prior
 phi0bounds = c(1.5, 14) # assuming truncated uniform prior
 # Mpars = c(10^5.5, 10^4) # assuming log-normal prior
-Mpars = c(5.2*2, 0.5*2)
+Mpars = c(5.5, 4)
 rhbounds = c(3.4, 2.2) # assuming Gaussian
 
 # covariance matrix (guess)
@@ -33,4 +33,6 @@ covariancematrix = matrix(c(0.001,0,0,0,
                             0,0.007,0,0,
                             0,0,5,0,
                             0,0,0,0.002), nrow=4)
+
+
 
