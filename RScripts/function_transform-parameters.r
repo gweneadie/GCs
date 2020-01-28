@@ -15,3 +15,7 @@ inv.transform = function(x){
 transform.chains = function(x){
  exp(x[, 1:4])
 }
+
+# don't do a transform
+notransform.func = function(x) x
+
