@@ -2,6 +2,7 @@
 
 GCmcmc <- function(init, mydat, logDF, priors, N, transform.pars, propDF, thinning=1, progressBar=TRUE, parnames = NULL, ...){
   
+
   # check to make sure that initial paramters are OK with the priors
   testpriors = sum( log( priors( pars = transform.pars(init), ... ) ) )
 
@@ -10,7 +11,6 @@ GCmcmc <- function(init, mydat, logDF, priors, N, transform.pars, propDF, thinni
   # check to make sure that initial guess of parameters are not bad
   testpars = logDF( pars=init, dat=mydat, transform.pars = transform.pars )
 
-  
   if( any( !is.finite(testpars) ) ){ stop("bad initial model parameters") }
   
 
@@ -80,7 +80,7 @@ GCmcmc <- function(init, mydat, logDF, priors, N, transform.pars, propDF, thinni
   if( !is.null(parnames) ){ colnames(chain) = parnames }
   
   # OUTPUT    
-  out = list(chain=chain, acceptance.rate = accept/N, dat = mydat, priorfuncs=priors)
+  out = list(chain=as.mcmc(chain), acceptance.rate = accept/N, dat = mydat, priorfuncs=priors)
   
 }
 
