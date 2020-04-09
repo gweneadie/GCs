@@ -23,7 +23,8 @@ adjustproposal = function(acceptrange = c(0.2,0.4), yourpatience, Nsteps, initco
       
   if( goodacceptancerate ){ combinedrun = initialrun$chain}
     
-  while( (!goodacceptancerate) & count<yourpatience | count==1 ){
+  while( #(!goodacceptancerate) &f
+    count<yourpatience | count==1 ){
     
     # add to the count for your patrience
     count = 1 + count

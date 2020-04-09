@@ -9,30 +9,33 @@ source("function_GCmcmc.r")
 source("function_iswhole.r")
 source("function_priors.r")
 source("function_prior-wrapper.r")
+source("function_adjustproposal.r")
+
 
 # read in snap data
-mydata = readRDS("../mockdata/snap_Rformat_2019-11-25.rds")
+mydata = readRDS("../mockdata/snap_version2_dffix_2020-03-09.rds")
 
-# get a random sample of 100 stars
+# get a random sample of stars
 set.seed(123)
 mydata = mydata[sample(x = 1:nrow(mydata), size = 100, replace = FALSE), ]
 
 
-# initial parameters g, phi0, M, rh
-initpars = c(2.3,3.,50000.,4.)
+
+# initial parameters g, phi0, M (in solar masses), rh
+initpars = c(1.5, 5., 120000., 3.)
+
 
 # hyperprior values
 gbounds = c(1e-3, 3.5) # assuming truncated uniform prior
 phi0bounds = c(1.5, 14) # assuming truncated uniform prior
-# Mpars = c(10^5.5, 10^4) # assuming log-normal prior
-Mpars = c(5.5, 4)
+# for Mpars, gaussian on log10(M)
+log10Mpars = c( 5, 0.6 )
 rhbounds = c(3.4, 2.2) # assuming Gaussian
 
 # covariance matrix (guess)
 covariancematrix = matrix(c(0.001,0,0,0, 
                             0,0.007,0,0,
-                            0,0,5,0,
+                            0,0,0.1,0,
                             0,0,0,0.002), nrow=4)
-
 
 

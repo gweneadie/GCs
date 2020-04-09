@@ -4,7 +4,6 @@
 source("function_logDFlimepy.r")
 source("function_logDFspes.r")
 library(MASS)
-library(emdbook)
 source("function_transform-parameters.r")
 source("function_proposal-distribution-modelpars.r")
 source("function_GCmcmc.r")

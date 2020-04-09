@@ -19,6 +19,13 @@ l10norm.prior <- function( pars, ppars ){
   
 }
 
+########### Normal prior on log10M
+normlog10M.prior <- function(pars, ppars ){
+  
+  dnorm(x = log10(pars), mean = ppars[1], sd = ppars[2])
+  
+}
+
 ######### Uniform (truncated) prior function
 singleunif.prior <- function( pars, ppars ){
   
