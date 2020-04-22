@@ -4,7 +4,7 @@
 # mydat: dataframe of data
 # logDF: log of the distribution function
 # priors: list of functions for prior distribution that take in argument pars, ...
-# N: number of steps in Markov chain
+# N: integer, number of samples in final Markov chain
 # transform.pars: list of functions that transform parameters to another space
 # propDF: function, proposal distribution
 # thinning: integer to thin Markov chain (i.e. if thinning=10, then only every 10th parameter is saved in the chain)
@@ -70,8 +70,10 @@ GCmcmc <- function(init, mydat, logDF, priors, N, transform.pars, propDF, thinni
         # if difflog is positive or if exponential of difflog is greater than a randomly generated number between 0 and 1, then accept
         if( difflog > 0 | ( exp(difflog) > runif(1) ) ){
           
+          # if the ith element is a multiple of thinning, then save the value in the chain
           if(is.whole(i/thinning)){ chain[i/thinning, ] = partry }
           
+          # update initial value and track the acceptance
           init = partry
           accept = accept + 1
           
