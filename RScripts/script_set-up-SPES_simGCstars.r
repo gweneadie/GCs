@@ -18,26 +18,26 @@ mydata = readRDS("../mockdata/snap_version2_dffix_2020-03-09.rds")
 
 # get a random sample of stars
 set.seed(123)
-mydata = mydata[sample(x = 1:nrow(mydata), size = 100, replace = FALSE), ]
+mydata = mydata[sample(x = 1:nrow(mydata), size = 500, replace = FALSE), ]
 
-
+mydata = mydata[mydata$r>5, ]
 
 # initial parameters phi0, B, eta, M (in solar masses), rh
-initpars = c(5., 0.5, 0.4, 120000., 3.)
+initpars = c(5., 0.5, 0.45, 120000., 3.3)
 
 
 # hyperprior values
-Bbounds = c(0, 1) # assuming truncated uniform prior
-etabounds = c(0,1) # assuming truncated uniform prior
 phi0bounds = c(1.5, 14) # assuming truncated uniform prior
-# for Mpars, gaussian on log10(M)
-log10Mpars = c( 5, 0.6 )
-rhbounds = c(3.4, 2.2) # assuming Gaussian
+Bbounds = c(0, 1) # assuming truncated uniform prior
+etabounds = c(0, 1) # assuming truncated uniform prior
+log10Mpars = c( 5, 0.6 ) # for Mpars, gaussian on log10(M)
+rhbounds = c(3.4, 0.2) # assuming Gaussian
+
 
 # covariance matrix (guess)
 covariancematrix = matrix(c(0.001, 0, 0, 0, 0,
                             0, 0.007, 0, 0, 0,
-                            0, 0, 0.007, 0, 0,
+                            0, 0, 0.07, 0, 0,
                             0, 0, 0, 0.1, 0,
                             0, 0, 0, 0, 0.002), nrow=5)
 
