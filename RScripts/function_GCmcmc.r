@@ -1,4 +1,15 @@
-# GC mass estimator
+##### Globular Cluster mass estimator with mcmc
+
+# init: vector of initial model parameters
+# mydat: dataframe of data
+# logDF: log of the distribution function
+# priors: list of functions for prior distribution that take in argument pars, ...
+# N: number of steps in Markov chain
+# transform.pars: list of functions that transform parameters to another space
+# propDF: function, proposal distribution
+# thinning: integer to thin Markov chain (i.e. if thinning=10, then only every 10th parameter is saved in the chain)
+# progressBar: logical, default TRUE. Controls whether the user sees a progress bar
+# parnames: optional character vector for the parameter names
 
 GCmcmc <- function(init, mydat, logDF, priors, N, transform.pars, propDF, thinning=1, progressBar=TRUE, parnames = NULL, ...){
   
@@ -57,7 +68,7 @@ GCmcmc <- function(init, mydat, logDF, priors, N, transform.pars, propDF, thinni
         if( !is.numeric(difflog) ){ browser() }
         
         # if difflog is positive or if exponential of difflog is greater than a randomly generated number between 0 and 1, then accept
-        if( difflog > 0 | (exp(difflog) > runif(1)) ){
+        if( difflog > 0 | ( exp(difflog) > runif(1) ) ){
           
           if(is.whole(i/thinning)){ chain[i/thinning, ] = partry }
           
