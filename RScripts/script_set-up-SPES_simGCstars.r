@@ -12,18 +12,16 @@ source("function_priors.r")
 source("function_prior-wrapper.r")
 source("function_adjustproposal.r")
 
-
+# how many points do you want
+nsamp = 10000
 # read in snap data
 mydata = readRDS("../mockdata/snap_version2_dffix_2020-03-09.rds")
 
 # get a random sample of stars
-set.seed(123)
-mydata = mydata[sample(x = 1:nrow(mydata), size = 100, replace = FALSE), ]
-
-# mydata = mydata[mydata$r>5, ]
+mydata = mydata[sample(x = 1:nrow(mydata), size = nsamp, replace = FALSE), ]
 
 # initial parameters phi0, B, eta, M (in solar masses), rh
-initpars = c(5., 0.5, 0.45, 120000., 3.3)
+initpars = c(5., 0.5, 0.5, 120000., 3.3)
 
 
 # hyperprior values
@@ -38,7 +36,7 @@ rhbounds = c(3.4, 0.2) # assuming Gaussian
 covariancematrix = matrix(c(0.001, 0, 0, 0, 0,
                             0, 0.007, 0, 0, 0,
                             0, 0, 0.003, 0, 0,
-                            0, 0, 0, 1, 0,
+                            0, 0, 0, 1e4, 0,
                             0, 0, 0, 0, 0.0002), nrow=5)
 
 
