@@ -28,7 +28,7 @@ logDF.spes = function(pars, dat, transform.pars=NULL){
   if( any(class(lmodel)=="try-error") ){
     
     browser()
-    output = -Inf
+    output = rep( -Inf, nrow(dat) )
     
   }else{
     
@@ -38,7 +38,7 @@ logDF.spes = function(pars, dat, transform.pars=NULL){
     # if there is an error then return -Inf
     if( any(class(output)=="try-error") ){
       browser()
-      output = -Inf
+      output = rep( -Inf, nrow(dat) )
     }
     
   }
