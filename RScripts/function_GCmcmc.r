@@ -35,6 +35,10 @@ GCmcmc <- function(init, mydat, logDF, priors, N, transform.pars, propDF, thinni
   chain = matrix( ncol=npars, nrow=N )
   chain[1, ] = init
   
+  # make a chain of the logDF values
+  logDFchain = matrix( ncol=1, nrow=N )
+  logDFchain[1, ] = sum(testpars) + testpriors
+  
   # counter to keep track of acceptances
   accept = 0
   
@@ -57,7 +61,10 @@ GCmcmc <- function(init, mydat, logDF, priors, N, transform.pars, propDF, thinni
       # if any of the new pars return 0 probability from prior, then reject points
       if( any( !is.finite(logpriorstry) ) ){
         
-        if(is.whole(i/thinning)){ chain[i/thinning, ] = init }
+        if(is.whole(i/thinning)){ 
+          chain[i/thinning, ] = init 
+          logDFchain[i/thinning, ] = sum( logDF( pars=init, dat=mydat, transform.pars=transform.pars )) + logpriorsinit 
+          }
         
       }else{
         
@@ -71,7 +78,9 @@ GCmcmc <- function(init, mydat, logDF, priors, N, transform.pars, propDF, thinni
         if( difflog > 0 | ( exp(difflog) > runif(1) ) ){
           
           # if the ith element is a multiple of thinning, then save the value in the chain
-          if(is.whole(i/thinning)){ chain[i/thinning, ] = partry }
+          if(is.whole(i/thinning)){ 
+            chain[i/thinning, ] = partry 
+            logDFchain[i/thinning, ] = sum( logDF( pars=partry, dat=mydat, transform.pars=transform.pars )) + logpriorstry             }
           
           # update initial value and track the acceptance
           init = partry
@@ -79,7 +88,12 @@ GCmcmc <- function(init, mydat, logDF, priors, N, transform.pars, propDF, thinni
           
         }else{ # otherwise, reject and stay in same place in parameter space
           
-          if(is.whole(i/thinning)){ chain[i/thinning, ] = init }
+          if(is.whole(i/thinning)){ 
+            
+            chain[i/thinning, ] = init
+            logDFchain[i/thinning, ] = sum( logDF( pars=init, dat=mydat, transform.pars=transform.pars )) + logpriorsinit 
+            
+            }
           
         } 
         
@@ -93,7 +107,7 @@ GCmcmc <- function(init, mydat, logDF, priors, N, transform.pars, propDF, thinni
   if( !is.null(parnames) ){ colnames(chain) = parnames }
   
   # OUTPUT    
-  out = list(chain=as.mcmc(chain), acceptance.rate = accept/N, dat = mydat, priorfuncs=priors)
+  out = list(chain=as.mcmc(chain), acceptance.rate = accept/N, dat = mydat, priorfuncs=priors, logDFchain = as.mcmc(logDFchain))
   
 }
 
