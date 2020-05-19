@@ -54,3 +54,9 @@ rhGaussianPrior <- function( pars, ppars ){
   }
   
 }
+
+truncnorm.prior <- function(pars, ppars){
+  
+  # pars must be given in the correct order as shown below
+  dtruncnorm(x = pars, a = pars[1], b = pars[2], mean = pars[3], sd = pars[4])
+}
