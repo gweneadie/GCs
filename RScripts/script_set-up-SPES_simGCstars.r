@@ -29,8 +29,7 @@ phi0bounds = c(1.5, 14) # assuming truncated uniform prior
 Bbounds = c(0, 1) # assuming truncated uniform prior
 etabounds = c(0, 1) # assuming truncated uniform prior
 log10Mpars = c( 5, 0.6 ) # for Mpars, gaussian on log10(M)
-rhbounds = c(3.4, 0.2) # assuming Gaussian
-
+rhpars = c(0, 30, 3.4, 0.2) # lower bound, upper bound, mean, sd
 
 # covariance matrix (guess)
 covariancematrix = matrix(c(0.001, 0, 0, 0, 0,
