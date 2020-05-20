@@ -20,8 +20,8 @@ plot( as.mcmc( runinit$logDFchain) )
 # adjust covariance matrix for proposal distribution using automated 
 results = adjustproposal(acceptrange = c(0.2,0.4), Nsteps = 500, yourpatience = 10, initialrun = runinit,
                       mydat = mydata, logDF = logDF.spes, priors = prior.wrapper, transform.pars = notransform.func, 
-                      priorfuncs = list( singleunif.prior, singleunif.prior, singleunif.prior, normlog10M.prior, rhGaussianPrior ), 
-                      ppars = list( phi0bounds, Bbounds, etabounds, log10Mpars, rhbounds ), 
+                      priorfuncs = list( singleunif.prior, singleunif.prior, singleunif.prior, normlog10M.prior, truncnorm.prior ), 
+                      ppars = list( phi0bounds, Bbounds, etabounds, log10Mpars, rhpars ), 
                       propDF = mypropDFspes, parnames = c("Phi_0", "B", "eta", "M", "r_h"))
 
 
@@ -29,7 +29,7 @@ plot(as.mcmc(results$chain))
 
 
 # save the chain
-saveRDS(object = results, file = paste("../results/prelim_mcmc_narrow-rh-prior_normin", nsamp, Sys.Date(), sep="_"))
+saveRDS(object = runinit, file = paste("../results/prelim_mcmc_truncnorm-rh-prior_normin", nsamp, Sys.Date(), sep="_"))
 
         
 
