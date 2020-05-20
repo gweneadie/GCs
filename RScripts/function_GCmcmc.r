@@ -71,14 +71,16 @@ GCmcmc <- function(init, mydat, logDF, priors, N, transform.pars, propDF, thinni
         # difference of logs of likelihood*prior for init and partry
         difflog = sum( logDF( pars=partry, dat=mydat, transform.pars=transform.pars )) + logpriorstry - sum( logDF( pars=init, dat=mydat, transform.pars=transform.pars )) - logpriorsinit 
         
+        
         # if this gives a non-numeric answer, something is up, so open a browser
         if( !is.numeric(difflog) ){ browser() }
         
         # if difflog is positive or if exponential of difflog is greater than a randomly generated number between 0 and 1, then accept
-        if( difflog > 0 | ( exp(difflog) > runif(1) ) ){
+        if( difflog > 0 | ( difflog > log( runif(1) ) ) ){
           
           # if the ith element is a multiple of thinning, then save the value in the chain
           if(is.whole(i/thinning)){ 
+            
             chain[i/thinning, ] = partry 
             logDFchain[i/thinning, ] = sum( logDF( pars=partry, dat=mydat, transform.pars=transform.pars )) + logpriorstry             }
           
