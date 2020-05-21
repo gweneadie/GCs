@@ -39,7 +39,3 @@ logDF.limepy(dat = cbind(5., 1., 0.), pars = c(1.,5.,1000.,3.))
 
 # NOTE: default class in R is double precision numeric, not integer. Need to do, e.g. 1L to make something stored as an integer. However, 1:10 will return a sequence of integers
 
-# Questions:
-# - is integer default in python 3?
-# - what would be appropriate prior distributions for g, phi0, M, and rh for a globular cluster?
-# - why do I get a number when r = 0 and v = 0 ?
