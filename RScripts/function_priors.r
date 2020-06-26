@@ -23,7 +23,7 @@ l10norm.prior <- function( pars, ppars ){
 normlog10M.prior <- function(pars, ppars ){
   
   if( pars<=0 ){ return(0) }else{
-    dnorm(x = log10(pars), mean = ppars[1], sd = ppars[2])
+    dnorm(x = log10(pars), mean = ppars[1], sd = ppars[2])/(pars * log(10))
   }
   
 }
@@ -55,6 +55,8 @@ rhGaussianPrior <- function( pars, ppars ){
   
 }
 
+########### Truncated normal prior
+library(truncnorm)
 truncnorm.prior <- function(pars, ppars){
   
   # pars must be given in the correct order as shown below
