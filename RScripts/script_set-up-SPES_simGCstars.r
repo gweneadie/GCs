@@ -13,7 +13,7 @@ source("function_prior-wrapper.r")
 source("function_adjustproposal.r")
 
 # how many points do you want
-nsamp = 1000
+nsamp = 5000
 # read in snap data
 mydata = readRDS("../mockdata/snap_version2_dffix_2020-03-09.rds")
 
@@ -28,7 +28,7 @@ initpars = c(5., 0.5, 0.5, 120000., 3.3)
 phi0bounds = c(1.5, 14) # assuming truncated uniform prior
 Bbounds = c(0, 1) # assuming truncated uniform prior
 etabounds = c(0, 1) # assuming truncated uniform prior
-log10Mpars = c( 5, 0.6 ) # for Mpars, gaussian on log10(M)
+log10Mpars = c( 5.85, 0.6 ) # for Mpars, gaussian on log10(M)
 rhpars = c(0, 30, 3.4, 0.2) # lower bound, upper bound, mean, sd
 
 # covariance matrix (guess)
