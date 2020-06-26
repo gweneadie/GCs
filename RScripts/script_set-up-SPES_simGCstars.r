@@ -13,7 +13,7 @@ source("function_prior-wrapper.r")
 source("function_adjustproposal.r")
 
 # how many points do you want
-nsamp = 10000
+nsamp = 1000
 # read in snap data
 mydata = readRDS("../mockdata/snap_version2_dffix_2020-03-09.rds")
 
