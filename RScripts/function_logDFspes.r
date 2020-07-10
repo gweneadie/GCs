@@ -27,7 +27,6 @@ logDF.spes = function(pars, dat, transform.pars=NULL){
   # if there is an error because of bad parameter values (i.e. unphysical model) then open a browser to see what's happening. Return -Inf
   if( any(class(lmodel)=="try-error") ){
     
-    browser()
     output = rep( -Inf, nrow(dat) )
     
   }else{
@@ -37,7 +36,7 @@ logDF.spes = function(pars, dat, transform.pars=NULL){
     
     # if there is an error then open a browser to see what's happening. Return -Inf
     if( any(class(output)=="try-error") ){
-      browser()
+      
       output = rep( -Inf, nrow(dat) )
     }
     

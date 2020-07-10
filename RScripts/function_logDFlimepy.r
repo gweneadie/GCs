@@ -21,11 +21,10 @@ logDF.limepy = function(pars, dat, transform.pars=NULL, pot=NULL, DF=NULL){
   
   # numerically determine the df given the parameter values
   # pars[1] = g ; pars[2] = phi0 ; pars[3] = M, pars[4] = rh
-  lmodel = limepy$limepy(g=pars[1], phi0=pars[2], M=pars[3], rh=pars[4])
+  lmodel = try( limepy$limepy(g=pars[1], phi0=pars[2], M=pars[3], rh=pars[4]), silent = TRUE)
   
   if( any(class(lmodel)=="try-error") ){
     
-    browser()
     output = rep( -Inf, nrow(dat) )
     
   }else{
