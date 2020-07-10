@@ -13,7 +13,6 @@
 
 GCmcmc <- function(init, mydat, logDF, priors, N, transform.pars, propDF, thinning=1, progressBar=TRUE, parnames = NULL, ...){
   
-
   # check to make sure that initial paramters are OK with the priors
   testpriors = sum( log( priors( pars = transform.pars(init), ... ) ) )
 
@@ -48,11 +47,11 @@ GCmcmc <- function(init, mydat, logDF, priors, N, transform.pars, propDF, thinni
   }
   
   # make the Markov Chain
-  for( i in 1:(N*thinning) ){
+  for( i in 2:(N*thinning) ){
       
       # draw trial model parameters
       partry = init + propDF(...)
-      
+       
       # calculate priors for parameters
       logpriorsinit = sum( log( priors( pars = transform.pars( init ), ... ) ) )
       
