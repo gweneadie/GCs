@@ -29,8 +29,28 @@ rhpars = c(0, 30, 3.4, 0.2) # lower bound, upper bound, mean, sd for truncated n
 ################# first look at regular limepy
 # make grid of parameter values
 griddim = 25
-pargrid = expand.grid(g = seq(1e-1, 3.49, length.out=griddim), phi0 = seq(1.5, 14, length.out = griddim), M = seq(1e5, 1.5e5, length.out = griddim), rh = seq(1e-2, 30, length.out = griddim))
+gseq = seq(1e-1, 3.49, length.out=griddim)
+phi0seq = seq(1.5, 14, length.out = griddim)
+Mseq = seq(1e5, 1.5e5, length.out = griddim)
+rhseq = seq(1e-2, 30, length.out = griddim)
+
+pargrid = expand.grid(g = gseq, phi0 = phi0seq, M = Mseq, rh = rhseq)
 
 system.time( test <- apply(X = pargrid, FUN = target, MARGIN = 1, mydat = mydata, logDF = logDF.limepy, priorfuncs = list(singleunif.prior, singleunif.prior, normlog10M.prior, truncnorm.prior), ppars = list( gbounds, phi0bounds, log10Mpars, rhpars)))
 
 saveRDS(test, file = paste("../results/gridsearch_", Sys.Date(), sep="") )
+
+
+################# now try it with SPES
+# need a couple different parameters
+Bbounds = c(0, 1) # assuming truncated uniform prior
+etabounds = c(0, 1) # assuming truncated uniform prior
+Bseq = seq(1e-1, 1, length.out = griddim)
+etaseq = seq(1e-1, 1, length.out = griddim)
+
+# need a different grid because 5 parameters now
+pargridSPES = expand.grid(phi0 = phi0seq, B = Bseq, eta = etaseq, M = Mseq, rh = rhseq)
+
+system.time( SPEStest <- apply(X = pargridSPES, FUN = target, MARGIN = 1, mydat = mydata, logDF = logDF.spes, priorfuncs = list(singleunif.prior, singleunif.prior, singleunif.prior, normlog10M.prior, truncnorm.prior), ppars = list(phi0bounds, Bbounds, etabounds, log10Mpars, rhpars) ) )
+
+saveRDS(SPEStest, file = paste("../results/gridsearchSPES_", Sys.Date(), sep=""))
