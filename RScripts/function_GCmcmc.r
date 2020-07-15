@@ -13,12 +13,12 @@
 
 GCmcmc <- function(init, mydat, logDF, priors, N, transform.pars, propDF, thinning=1, progressBar=TRUE, parnames = NULL, ...){
   
-  # check to make sure that initial paramters are OK with the priors
+  # check that initial paramters are OK with the priors
   testpriors = sum( log( priors( pars = transform.pars(init), ... ) ) )
 
   if( any( !is.finite(testpriors) ) ){ stop("bad initial model parameters for priors")}
   
-  # check to make sure that initial guess of parameters are not bad
+  # check that initial guess of parameters are OK
   testpars = logDF( pars=init, dat=mydat, transform.pars = transform.pars )
 
   if( any( !is.finite(testpars) ) ){ stop("bad initial model parameters") }
