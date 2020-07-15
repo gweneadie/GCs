@@ -34,19 +34,23 @@ phi0seq = seq(1.5, 14, length.out = griddim)
 Mseq = seq(1e5, 1.5e5, length.out = griddim)
 rhseq = seq(1e-2, 30, length.out = griddim)
 
-pargrid = expand.grid(g = gseq, phi0 = phi0seq, M = Mseq, rh = rhseq)
+# pargrid = expand.grid(g = gseq, phi0 = phi0seq, M = Mseq, rh = rhseq)
 
-system.time( test <- apply(X = pargrid, FUN = target, MARGIN = 1, mydat = mydata, logDF = logDF.limepy, priorfuncs = list(singleunif.prior, singleunif.prior, normlog10M.prior, truncnorm.prior), ppars = list( gbounds, phi0bounds, log10Mpars, rhpars)))
+# system.time( test <- apply(X = pargrid, FUN = target, MARGIN = 1, mydat = mydata, logDF = logDF.limepy, priorfuncs = list(singleunif.prior, singleunif.prior, normlog10M.prior, truncnorm.prior), ppars = list( gbounds, phi0bounds, log10Mpars, rhpars)))
 
-saveRDS(test, file = paste("../results/gridsearch_", Sys.Date(), sep="") )
+# saveRDS(test, file = paste("../results/gridsearch_", Sys.Date(), sep="") )
 
 
 ################# now try it with SPES
 # need a couple different parameters
+griddim = 13
 Bbounds = c(0, 1) # assuming truncated uniform prior
 etabounds = c(0, 1) # assuming truncated uniform prior
 Bseq = seq(1e-1, 1, length.out = griddim)
 etaseq = seq(1e-1, 1, length.out = griddim)
+phi0seq = seq(1.5, 14, length.out = griddim)
+Mseq = seq(1e5, 1.5e5, length.out = griddim)
+rhseq = seq(1e-2, 30, length.out = griddim)
 
 # need a different grid because 5 parameters now
 pargridSPES = expand.grid(phi0 = phi0seq, B = Bseq, eta = etaseq, M = Mseq, rh = rhseq)
