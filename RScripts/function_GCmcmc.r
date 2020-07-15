@@ -2,7 +2,7 @@
 
 # init: vector of initial model parameters
 # mydat: dataframe of data
-# logDF: log of the distribution function
+# logLike: log of the likelihood
 # priors: list of functions for prior distribution that take in argument pars, ...
 # N: integer, number of samples in final Markov chain
 # transform.pars: list of functions that transform parameters to another space
@@ -11,7 +11,7 @@
 # progressBar: logical, default TRUE. Controls whether the user sees a progress bar
 # parnames: optional character vector for the parameter names
 
-GCmcmc <- function(init, mydat, logDF, priors, N, transform.pars, propDF, thinning=1, progressBar=TRUE, parnames = NULL, ...){
+GCmcmc <- function(init, mydat, logLike, priors, N, transform.pars, propDF, thinning=1, progressBar=TRUE, parnames = NULL, ...){
   
   # check that initial paramters are OK with the priors
   testpriors = sum( log( priors( pars = transform.pars(init), ... ) ) )
@@ -19,7 +19,7 @@ GCmcmc <- function(init, mydat, logDF, priors, N, transform.pars, propDF, thinni
   if( any( !is.finite(testpriors) ) ){ stop("bad initial model parameters for priors")}
   
   # check that initial guess of parameters are OK
-  testpars = logDF( pars=init, dat=mydat, transform.pars = transform.pars )
+  testpars = logLike( pars=init, dat=mydat, transform.pars = transform.pars )
 
   if( any( !is.finite(testpars) ) ){ stop("bad initial model parameters") }
   
@@ -34,9 +34,9 @@ GCmcmc <- function(init, mydat, logDF, priors, N, transform.pars, propDF, thinni
   chain = matrix( ncol=npars, nrow=N )
   chain[1, ] = init
   
-  # make a chain of the logDF values
-  logDFchain = matrix( ncol=1, nrow=N )
-  logDFchain[1, ] = sum(testpars) + testpriors
+  # make a chain of the logLike values
+  logLikechain = matrix( ncol=1, nrow=N )
+  logLikechain[1, ] = sum(testpars) + testpriors
   
   # counter to keep track of acceptances
   accept = 0
@@ -62,13 +62,13 @@ GCmcmc <- function(init, mydat, logDF, priors, N, transform.pars, propDF, thinni
         
         if(is.whole(i/thinning)){ 
           chain[i/thinning, ] = init 
-          logDFchain[i/thinning, ] = sum( logDF( pars=init, dat=mydat, transform.pars=transform.pars )) + logpriorsinit 
+          logLikechain[i/thinning, ] = sum( logLike( pars=init, dat=mydat, transform.pars=transform.pars )) + logpriorsinit 
           }
         
       }else{
         
         # difference of logs of likelihood*prior for init and partry
-        difflog = sum( logDF( pars=partry, dat=mydat, transform.pars=transform.pars )) + logpriorstry - sum( logDF( pars=init, dat=mydat, transform.pars=transform.pars )) - logpriorsinit 
+        difflog = sum( logLike( pars=partry, dat=mydat, transform.pars=transform.pars )) + logpriorstry - sum( logLike( pars=init, dat=mydat, transform.pars=transform.pars )) - logpriorsinit 
         
         
         # if this gives a non-numeric answer, something is up, so open a browser
@@ -81,7 +81,7 @@ GCmcmc <- function(init, mydat, logDF, priors, N, transform.pars, propDF, thinni
           if(is.whole(i/thinning)){ 
             
             chain[i/thinning, ] = partry 
-            logDFchain[i/thinning, ] = sum( logDF( pars=partry, dat=mydat, transform.pars=transform.pars )) + logpriorstry             }
+            logLikechain[i/thinning, ] = sum( logLike( pars=partry, dat=mydat, transform.pars=transform.pars )) + logpriorstry             }
           
           # update initial value and track the acceptance
           init = partry
@@ -92,7 +92,7 @@ GCmcmc <- function(init, mydat, logDF, priors, N, transform.pars, propDF, thinni
           if(is.whole(i/thinning)){ 
             
             chain[i/thinning, ] = init
-            logDFchain[i/thinning, ] = sum( logDF( pars=init, dat=mydat, transform.pars=transform.pars )) + logpriorsinit 
+            logLikechain[i/thinning, ] = sum( logLike( pars=init, dat=mydat, transform.pars=transform.pars )) + logpriorsinit 
             
             }
           
@@ -108,7 +108,7 @@ GCmcmc <- function(init, mydat, logDF, priors, N, transform.pars, propDF, thinni
   if( !is.null(parnames) ){ colnames(chain) = parnames }
   
   # OUTPUT    
-  out = list(chain=as.mcmc(chain), acceptance.rate = accept/N, dat = mydat, priorfuncs=priors, logDFchain = as.mcmc(logDFchain))
+  out = list(chain=as.mcmc(chain), acceptance.rate = accept/N, dat = mydat, priorfuncs=priors, logLikechain = as.mcmc(logLikechain))
   
 }
 
