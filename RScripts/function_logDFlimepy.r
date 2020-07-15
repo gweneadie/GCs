@@ -4,7 +4,7 @@ use_python("/usr/bin/python3")
 limepy <- import("limepy")
 
 
-# function to take in limepy$df function and dat.try
+# function to take in limepy$df function and data
 
 # GME logPDF function format:
 # logPDF( pars=init, dat=dat.current, DF=DF, pot=pot, transform.pars=transform.pars )
