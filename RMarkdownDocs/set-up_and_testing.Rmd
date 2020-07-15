@@ -1,0 +1,80 @@
+---
+title: "Checking functions for GC Project"
+author: "Gwen Eadie"
+date: "15/07/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## Intro
+
+Our goal is to estimate the mass and cumulative mass profile of a globular cluster (GC) using the kinematic information (position and velocity) of its individual stars, under the assumption of some physical model and prior information. We are using a Bayesian framework for four main reasons. First, we wish to incorporate useful prior information about GCs to help contrain parameters estimates. Second, real kinematic data for GCs is often incomplete and a Bayesian framework allows us to include both incomplete and complete data simultaneously. Third, real data are also subject to measurement uncertainties that well understood by astronomres and that we would eventually like to incorporate --- a hierarchical Bayesian framework allows for this. Fourth, our ultimate goal is to obtain samples from the posterior distribution in order to infer physical quantities such as the total mass and cumulative mass profile, without having to make assumptions about e.g., the mass-to-light ratio of the cluster. 
+
+The first step towards our goal is to test our method on simulated GC data. In this initial phase, we are going to use complete data and assume perfect measurements. We will also be working in the reference frame of the GC, where positions and velocities of individual stars are given with respect to the GC center. Eventually we will change this to work in projected space on the plane of the sky. 
+
+In our Bayesian set-up, the likelihood is defined by a physical Distribution Function (DF), $f(x|\mathbf{\theta})$ of a lowered-isothermal model given some model parameters $\mathbf{\theta}$. The likelihood is defined by the DF and the total mass $M$ of the GC:
+$$
+\mathcal{L(}x|\theta) = \frac{f(x|\mathbf{\theta})}{M}.
+$$
+For lowered-isothermal models, the DF must be calculated numerically, and thus the likelihood must be calculated numerically too. For the DF, we are exploring two separate cases: (1) when all stars in the GC are assumed to be bound (i.e., the LIMEPY model), and (2) when some stars are allowed to be "potential escapers" (i.e., the SPES model).
+
+For the first round of testing, we are using simulated kinematic data for stars drawn from the LIMEPY model (i.e. only bound stars are allowed). We suspect that by using these data, assuming the LIMEPY DF for the likelihood, and defining somewhat informative priors, we should be able to obtain reasonably-correct parameter estimates for the total mass through estimation of the posterior distribution using MCMC. In the case that we use these data but instead assume a SPES DF for the likelihood (which includes some different/extra parameters), we are less sure how well the model will estimate the physical parameters.
+
+The LIMEPY and SPES models have four and five parameters respectively:
+$$
+\text{LIMEPY}\rightarrow (g, \Phi_0, M, r_h)\\
+\text{SPES}\rightarrow (\Phi_0, B, \eta, M, r_h)
+$$
+In both LIMEPY and SPES, $M$ is the total mass of the GC and $r_h$ is the half-light radius of the GC. In LIMEPY, $g$ and $\Phi_0$ determine the gravitational potential of the GC. In SPES, $\Phi_0$ determines the gravitational potential of the GC, and $B$ and $\eta$ somehow determine how many "escapers" there are in the GC (and maybe their spatial distribution? I'm still fuzzy on this part).
+
+In order to calculate a DF that is physically realistic, the above parameters are subject to numerical bounds. Above all, every parameter must be greater than zero. In the SPES model, $B$ and $eta$ are restricted between $0$ and $1$. Furthermore, astronomers have a lot of prior information about GCs in general, so we can put informative priors on things like the mass and half-light radius.
+
+For our analysis, we choose the following priors for the LIMEPY parameters,
+$$
+g \sim \text{unif}(0.001, 3.5) \\
+\Phi_0 \sim \text{unif}(1.5, 14) \\
+\log_{10}M \sim \frac{N(\mu_M, \sigma_M)}{M\ln(10)} \\
+r_h \sim N(a, b, \mu_{r_h}, \sigma_{r_h}). \\
+$$
+where $\mu_M = 5.85$ and $\sigma_M=0.6$ are defined in $\log_{10}M$, and where in the last line we have a truncated normal distribution. We set the lower and upper bounds of $r_h$ $a=0$, $b=30$, $r_h.
+
+The prior distributions for the SPES models are:
+$$
+\Phi_0 \sim \text{unif}(1.5, 14) \\
+B \sim \text{unif}(0,1) \\
+\eta \sim \text{unif}(0,1) \\
+\log_{10}M \sim \frac{N(\mu_M, \sigma_M)}{M\ln(10)} \\
+r_h \sim N(a, b, \mu_{r_h}, \sigma_{r_h}). \\
+$$
+
+
+ 
+
+## Priors
+
+First  I will check that the prior distributions we are using are working as expected by plotting their distributions.
+When working with the LIMEPY model
+```{r}
+source("../RScripts/function_priors.r")
+
+# When we are using singleunif.prior, singleunif.prior, normlog10M.prior, truncnorm.prior 
+
+```
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
