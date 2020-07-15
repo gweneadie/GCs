@@ -6,10 +6,10 @@ limepy <- import("limepy")
 
 # function to take in limepy$df function and data
 
-# GME logPDF function format:
-# logPDF( pars=init, dat=dat.current, DF=DF, pot=pot, transform.pars=transform.pars )
+# logPDF function format in mcmc call expects:
+# logPDF( pars=init, dat=mydat, DF=DF, pot=pot, transform.pars=transform.pars )
 
-logDF.limepy = function(pars, dat, transform.pars=NULL, pot=NULL, DF=NULL){
+logLike.limepy = function(pars, dat, transform.pars=NULL, pot=NULL, DF=NULL){
  
   # transform parameters 
   if( !is.null( transform.pars ) ){  pars = transform.pars( pars ) }
