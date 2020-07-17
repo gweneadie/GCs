@@ -5,31 +5,43 @@ date: "15/07/2020"
 output: html_document
 ---
 
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-## Intro
+## Introduction
 
-Our goal is to estimate the mass and cumulative mass profile of a globular cluster (GC) using the kinematic information (position and velocity) of its individual stars, under the assumption of some physical model and prior information. We are using a Bayesian framework for four main reasons. First, we wish to incorporate useful prior information about GCs to help contrain parameters estimates. Second, real kinematic data for GCs is often incomplete and a Bayesian framework allows us to include both incomplete and complete data simultaneously. Third, real data are also subject to measurement uncertainties that well understood by astronomres and that we would eventually like to incorporate --- a hierarchical Bayesian framework allows for this. Fourth, our ultimate goal is to obtain samples from the posterior distribution in order to infer physical quantities such as the total mass and cumulative mass profile, without having to make assumptions about e.g., the mass-to-light ratio of the cluster. 
+Our goal is to estimate the mass and cumulative mass profile of a globular cluster (GC) using the kinematic information (position and velocity) of its stars and assuming a physical model for the GC. 
 
-The first step towards our goal is to test our method on simulated GC data. In this initial phase, we are going to use complete data and assume perfect measurements. We will also be working in the reference frame of the GC, where positions and velocities of individual stars are given with respect to the GC center. Eventually we will change this to work in projected space on the plane of the sky. 
+A Bayesian framework has at least four main advantages for this type of analysis. First, we wish to incorporate useful prior information about GCs to help constrain parameters estimates. Second, kinematic data for GCs is often incomplete and a Bayesian framework allows us to include both incomplete and complete data simultaneously. Third, astronomical data are also subject to measurement uncertainties that are well understood by astronomers, and that we can incorporate via a hierarchical Bayesian framework. Fourth, our ultimate goal is to infer the cumulative mass profile without having to make assumptions about the mass-to-light ratio of the GC, and this should be achievable given samples from the posterior distribution of model parameters. 
 
-In our Bayesian set-up, the likelihood is defined by a physical Distribution Function (DF), $f(x|\mathbf{\theta})$ of a lowered-isothermal model given some model parameters $\mathbf{\theta}$. The likelihood is defined by the DF and the total mass $M$ of the GC:
+
+## Simulated Data
+The first step towards our goal is to develop and test our method on simulated GC data. In this initial phase, we use complete data and assume there is no measurement uncertainty. We are also going to work in the reference frame of the GC, where positions and velocities of individual stars are given with respect to the GC center. Ultimately, however, our goal is to work in projected space on the plane of the sky (i.e., the reference frame in which actual data are measured), incorporate measurement uncertainty, and account for incomplete data.  
+
+## Likelihood and Model Parameters
+The likelihood is defined by a Distribution Function (DF), $f(x|\mathbf{\theta})$ of a lowered-isothermal model given some model parameters $\mathbf{\theta}$ and the total mass $M$ of the GC:
 $$
 \mathcal{L(}x|\theta) = \frac{f(x|\mathbf{\theta})}{M}.
 $$
-For lowered-isothermal models, the DF must be calculated numerically, and thus the likelihood must be calculated numerically too. For the DF, we are exploring two separate cases: (1) when all stars in the GC are assumed to be bound (i.e., the LIMEPY model), and (2) when some stars are allowed to be "potential escapers" (i.e., the SPES model).
-
-For the first round of testing, we are using simulated kinematic data for stars drawn from the LIMEPY model (i.e. only bound stars are allowed). We suspect that by using these data, assuming the LIMEPY DF for the likelihood, and defining somewhat informative priors, we should be able to obtain reasonably-correct parameter estimates for the total mass through estimation of the posterior distribution using MCMC. In the case that we use these data but instead assume a SPES DF for the likelihood (which includes some different/extra parameters), we are less sure how well the model will estimate the physical parameters.
+For lowered-isothermal models, the DF $f(x|\mathbf{\theta})$ must be calculated numerically via a Python package called LIMEPY, and thus the likelihood must be calculated numerically too. For the DF, we are exploring two separate cases: (1) when all stars in the GC are assumed to be bound (i.e., the LIMEPY model DF), and (2) when some stars are allowed to be "potential escapers" (referred to as the SPES model DF).
 
 The LIMEPY and SPES models have four and five parameters respectively:
 $$
-\text{LIMEPY}\rightarrow (g, \Phi_0, M, r_h)\\
-\text{SPES}\rightarrow (\Phi_0, B, \eta, M, r_h)
+\text{LIMEPY}\rightarrow \mathbf{\theta} = (g, \Phi_0, M, r_h)\\
+\text{SPES}\rightarrow \mathbf{\theta} = (\Phi_0, B, \eta, M, r_h)
 $$
-In both LIMEPY and SPES, $M$ is the total mass of the GC and $r_h$ is the half-light radius of the GC. In LIMEPY, $g$ and $\Phi_0$ determine the gravitational potential of the GC. In SPES, $\Phi_0$ determines the gravitational potential of the GC, and $B$ and $\eta$ somehow determine how many "escapers" there are in the GC (and maybe their spatial distribution? I'm still fuzzy on this part).
 
-In order to calculate a DF that is physically realistic, the above parameters are subject to numerical bounds. Above all, every parameter must be greater than zero. In the SPES model, $B$ and $eta$ are restricted between $0$ and $1$. Furthermore, astronomers have a lot of prior information about GCs in general, so we can put informative priors on things like the mass and half-light radius.
+In both LIMEPY and SPES, $M$ is the total mass and $r_h$ is the half-light radius of the GC. In LIMEPY, $g$ determines the spatial distribution of stars and $\Phi_0$ determines the gravitational potential of the GC. In SPES, $\Phi_0$ determines the gravitational potential of the GC, and $B$ and $\eta$ somehow determine how many "escapers" there are in the GC (and maybe their spatial distribution? I'm still fuzzy on the physical interpretation of these parameters).
+
+
+For our intial tests, we use simulated kinematic data of stars following a LIMEPY model DF with parameters $\mathbf{\theta}$. We assume the LIMEPY DF for the likelihood and define informative priors on the model parameters. Given that the DF and the data follow the same model, we expect to obtain reasonable parameter estimates for the total mass $M$ through estimation of the posterior distribution using MCMC. After this, we will perform the same exercise with the simulated LIMEPY data but instead assume an SPES model for the likelihood. In the latter case, we are less sure how well the model will estimate the physical parameters.
+
+## Prior Distributions on $\mathbf{\theta}$
+
+In order for a DF to correspond to physically realistic GC, all model parameters must be greater than zero. In the SPES model, $B$ and $\eta$ are also restricted between $0$ and $1$ to be physically meaningful. 
+
+Astronomers also have a lot of prior information about GCs in general, so we can put informative priors on things like the mass and half-light radius.
 
 For our analysis, we choose the following priors for the LIMEPY parameters,
 $$
@@ -38,43 +50,278 @@ g \sim \text{unif}(0.001, 3.5) \\
 \log_{10}M \sim \frac{N(\mu_M, \sigma_M)}{M\ln(10)} \\
 r_h \sim N(a, b, \mu_{r_h}, \sigma_{r_h}). \\
 $$
-where $\mu_M = 5.85$ and $\sigma_M=0.6$ are defined in $\log_{10}M$, and where in the last line we have a truncated normal distribution. We set the lower and upper bounds of $r_h$ $a=0$, $b=30$, $r_h.
+where $\mu_M = 5.85$ and $\sigma_M=0.6$ (defined in $\log_{10}M$), and where in the last line we have a truncated normal distribution. We set the hyperparameters of the lower and upper bounds of $r_h$ to be $a=0$ and $b=30$ respectively. The mean and standard deviation for the $r_h$ parameter are 3.4 and 0.2.
 
-The prior distributions for the SPES models are:
+The prior distributions for the SPES models are
 $$
 \Phi_0 \sim \text{unif}(1.5, 14) \\
 B \sim \text{unif}(0,1) \\
 \eta \sim \text{unif}(0,1) \\
 \log_{10}M \sim \frac{N(\mu_M, \sigma_M)}{M\ln(10)} \\
-r_h \sim N(a, b, \mu_{r_h}, \sigma_{r_h}). \\
+r_h \sim N(a, b, \mu_{r_h}, \sigma_{r_h}), \\
 $$
+where we use the same hyperparameter values given above for $\mu_M, \sigma_M, a, b, \mu_{r_h},$ and $\sigma_{r_h}$.
 
-
- 
-
-## Priors
-
-First  I will check that the prior distributions we are using are working as expected by plotting their distributions.
-When working with the LIMEPY model
+The functions for these priors are defined in the functions_priors.r file.
 ```{r}
 source("../RScripts/function_priors.r")
 
-# When we are using singleunif.prior, singleunif.prior, normlog10M.prior, truncnorm.prior 
+ls()
+
+# Note that it includes a couple other functions too. We are using singleunif.prior, normlog10M.prior, and truncnorm.prior here, shown in more detail below:
+
+# uniform prior
+singleunif.prior
+
+# prior on log_10(M)
+normlog10M.prior
+
+# truncated normal prior
+truncnorm.prior
 
 ```
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+Let's check the make sure these are working as expected. First, let's define the hyperparameter values as listed above.
+```{r, results='hide'}
+gbounds = c(1e-3, 3.5) # bounds for uniform prior on g
+phi0bounds = c(1.5, 14) # bounds for uniform prior on phi_0
+log10Mpars = c( 5.85, 0.6 ) # mean and standard deviation for log10(M)
+rhpars = c(0, 30, 3.4, 0.2) # lower bound, upper bound, mean, sd for r_h
 
-```{r cars}
-summary(cars)
 ```
 
-## Including Plots
+Now let's plot the priors to check them.
 
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+### prior on $g$
+```{r, results="hide"}
+curve(expr = singleunif.prior(x, ppars = gbounds), from = 0, to = 4, n=1e3, ylab="density", xlab="g")
+grid()
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+### prior on $\Phi_0$
+```{r, results="hide"}
+curve( singleunif.prior(x, ppars = phi0bounds), from=0, to=15, n=1e3, ylab="density", xlab=expression(Phi[0]))
+```
+
+### prior on $\log_{10} M$:
+```{r, message=FALSE, results='hide'}
+library(emdbook)
+Mvalues = lseq(from = 0.5e4, to = 1.75e6, length.out = 1e3)
+
+plot(x = log10(Mvalues), y = sapply(X = Mvalues, FUN = normlog10M.prior, ppars = log10Mpars), type="l", xlab=expression(log[10](M)), ylab="density", )
+grid()
+```
+
+_Does this look right? This will allow for very massive globular clusters. Let's look at it in regular M
+space..._
+```{r, message=FALSE, results='hide'}
+library(emdbook)
+plot(x = Mvalues, y = sapply(X = Mvalues, FUN = normlog10M.prior, ppars = log10Mpars), type="l", xlab="M", ylab="density")
+grid()
+```
+
+_Is this representative of our prior information on GC masses? It seems like a GC of 1 million solar masses is really large?_
+
+
+### prior on $r_h$
+```{r}
+curve(expr = truncnorm.prior(pars = x, ppars = rhpars), from = 0, to = 10, n=1e3, ylab = "density", xlab = expression(r[h]))
+grid()
+```
+
+This looks correct --- we set quite a narrow prior on $r_h$ because in the case of a real Globular cluster, we would be able to obtain a prior distribution on $r_h$ from image analysis.
+
+I have also written a function called prior.wrapper that puts all the priors together into a single call, shown and demonstrated below.
+```{r}
+source('../RScripts/function_prior-wrapper.r')
+prior.wrapper
+
+# some test parameters for g, phi0, M, and rh
+testpars = c(1.5, 6.1, 1.2e5, 3.1)
+
+# Test the prior wrapper
+prior.wrapper(pars = testpars, priorfuncs = list(singleunif.prior, singleunif.prior, normlog10M.prior, truncnorm.prior), ppars = list(gbounds, phi0bounds, log10Mpars, rhpars))
+
+```
+
+Note that these are the same values as if you called the prior functions individually.
+```{r}
+singleunif.prior(pars = testpars[1], ppars = gbounds)
+singleunif.prior(pars = testpars[2], ppars = phi0bounds)
+normlog10M.prior(pars = testpars[3], ppars = log10Mpars)
+truncnorm.prior(pars = testpars[4], ppars = rhpars)
+```
+
+prior.wrapper will be used later when evaluating the log-target density. 
+
+## Testing the log-likelihood function for the LIMEPY model
+
+The MCMC code takes in a function for the log-likelihood. In the case of the LIMEPY model, the likelihood function is named logLike.limepy, shown below.
+```{r}
+# source the log-likelihood function
+source("../RScripts/function_logLike_LIMEPY.r")
+logLike.limepy
+```
+
+Next, I focus on the line which numerically calculates the DF in the logLike.limepy function. For this example I use a small ($n=10$) sample of simulated data.
+```{r}
+# load the simulated data for testing
+mydata = readRDS("../mockdata/snap_version2_dffix_2020-03-09.rds")
+# get a random sample of the stars
+nsamp = 10
+set.seed(123)
+mydata = mydata[sample(x = 1:nrow(mydata), size = nsamp, replace = FALSE), ]
+
+# what does the data frame look like?
+str(mydata)
+
+# numerically obtain the LIMEPY DF given by the test parameter values defined earlier
+LIMEPYdf = limepy$limepy(g = testpars[1], phi0 = testpars[2], M=testpars[3], rh=testpars[4])
+
+# now try using this model with the mock data to calculate the DF at the data points
+LIMEPYdf$df( mydata$r, mydata$v )
+```
+
+This looks like it is working OK. What if I pass it bad parameter values?
+```{r error=TRUE}
+badpars = c(0.1,2.1, 100, -3.4)
+
+badLIMEPYdf = limepy$limepy(g = badpars[1], phi0 = badpars[2], M=badpars[3], rh=badpars[4])
+
+# now try using this model with the mock data to calculate the DF at the data points
+badLIMEPYdf$df( mydata$r, mydata$v )
+
+```
+We receive an error from the Python code. Will come back to this in a minute. In the meantime, let's go back to the model that had reasonable $\mathbf{\theta}$ values and calculate the likelihood at the data points. The likelihood is the DF divided by the total mass M, so this would give us
+```{r}
+LIMEPYdf$df( mydata$r, mydata$v )/testpars[3]
+```
+
+and a log-likelihood value of 
+```{r}
+log( LIMEPYdf$df( mydata$r, mydata$v )/testpars[3] )
+
+```
+
+Is this what our function logLike.limepy() returns?
+```{r}
+logLike.limepy(pars = testpars, dat = mydata)
+
+```
+Yes. Good!
+
+How does my function deal with the bad parameter values?
+```{r}
+logLike.limepy(pars = badpars, dat = mydata)
+
+lessobviousbadpars = c(1.5, 1.5, 1e5, 0.1)
+
+logLike.limepy(pars = lessobviousbadpars, dat=mydata)
+```
+
+
+
+## Running optim on the log target distribution
+Now I will run an optimizer on the log-target distribution (log-likelihood plus log-priors) to see if it is reasonable to find a maximum in parameter space given our simulated data. Let's use more data ($n=500$) this time.
+```{r }
+# load the simulated data for testing
+mydata = readRDS("../mockdata/snap_version2_dffix_2020-03-09.rds")
+# get a random sample of the stars
+nsamp = 500
+set.seed(123)
+mydata = mydata[sample(x = 1:nrow(mydata), size = nsamp, replace = FALSE), ]
+
+# write a function to calculate the target density
+targetdensity <- function(init, mydat, logLike, priors=prior.wrapper, ... ){
+  
+  sum( logLike( pars=init, dat=mydat ) ) + sum( log( priors( pars = init, ... ) ) )
+}
+
+
+# run optim
+test = optim(par = testpars, fn = targetdensity, mydat = mydata, logLike = logLike.limepy, priorfuncs = list(singleunif.prior, singleunif.prior, normlog10M.prior, truncnorm.prior), ppars = list( gbounds, phi0bounds, log10Mpars, rhpars), control=list(fnscale=-1) )
+
+print(test)
+```
+
+It's a good idea to run optim again from these final parameter values, to double check the result
+```{r}
+test2 = optim(par = test$par, fn = targetdensity, mydat = mydata, logLike = logLike.limepy, priorfuncs = list(singleunif.prior, singleunif.prior, normlog10M.prior, truncnorm.prior), ppars = list( gbounds, phi0bounds, log10Mpars, rhpars), control=list(fnscale=-1) )
+
+print(test2)
+```
+
+It looks OK, the results barely changed and I think the parameter estimates look reasonable? 
+
+I also performed a grid search using the following code (not run here, because it's computationally expensive).
+```{r, eval=FALSE, echo=TRUE}
+# make grid of parameter values
+griddim = 25
+gseq = seq(1e-1, 3.49, length.out=griddim)
+phi0seq = seq(1.5, 14, length.out = griddim)
+Mseq = seq(1e5, 1.5e5, length.out = griddim)
+rhseq = seq(1e-2, 30, length.out = griddim)
+
+pargrid = expand.grid(g = gseq, phi0 = phi0seq, M = Mseq, rh = rhseq)
+
+targetvalues <- apply(X = pargrid, FUN = targetdensity, MARGIN = 1, mydat = mydata, logLike = logLike.limepy, priorfuncs = list(singleunif.prior, singleunif.prior, normlog10M.prior, truncnorm.prior), ppars = list( gbounds, phi0bounds, log10Mpars, rhpars))
+
+saveRDS(targetvalues, file = paste("../results/gridsearch_", Sys.Date(), sep="") )
+```
+
+I will load the results here and show the surface of the log-target density values in a conditional plot that focuses on the $M$ and $r_h$ grid. 
+```{r, message=FALSE, fig.height=7}
+library(ggplot2)
+library(dplyr)
+
+# set-up parameter grid
+griddim = 25
+gseq = seq(1e-1, 3.49, length.out=griddim)
+phi0seq = seq(1.5, 14, length.out = griddim)
+Mseq = seq(1e5, 1.5e5, length.out = griddim)
+rhseq = seq(1e-2, 30, length.out = griddim)
+
+pargrid = expand.grid(g = gseq, phi0 = phi0seq, M = Mseq, rh = rhseq)
+
+# the grid search is computationally expensive and done prior to this.
+# Load the resulting target density from the grid search
+target <- readRDS("../results/gridsearch_2020-07-08")
+# add the the dataframe
+pargrid$target = target
+
+# replace -Inf with NAs for plotting purposes
+pargrid$target <- na_if(x = pargrid$target, y = -Inf)
+
+
+# for plotting as a conditional plot, place target values into 5 bins in g and 5 bins in phi0
+conditional = mutate(pargrid, gbin = ggplot2::cut_interval(x = pargrid$g, n = 5) ) %>% 
+  mutate(phi0bin = ggplot2::cut_interval(x = pargrid$phi0, n=5)) %>%
+    group_by(M, rh, gbin, phi0bin) %>% # then group by these bins, M, and r_h
+      summarize(target = mean(target, na.rm = TRUE)) # and for every M and r_h, take the mean log target for every g and phi_0 combination
+
+# make the base plot
+g <- ggplot(conditional, aes(x=rh, y=M, fill=target)) + 
+  geom_raster()
+
+# make a conditional plot by binning the results 
+g + facet_grid( gbin ~ phi0bin ) + labs(title="Total Mass vs half-light radius", caption = "LIMEPY data, LIMPEY model", subtitle="log target density within each g (row) and phi0 (column) bin") + theme_bw() + theme(strip.text = element_text(size = 14), text = element_text(size=14), panel.grid.major = element_blank(), panel.grid.minor = element_blank()) 
+
+```
+
+This surface looks slightly problematic from a sampling perspetive. Where is the max log-target value? 
+```{r}
+conditional[which.max(conditional$target), ]
+```
+
+This is very different from optim's result using the same set of data!
+```{r}
+# the parameter order here is g, phi_0, M, and r_h
+print(test2)
+
+```
+I'm quite confused by this... some things to try:
+
+- re-run the grid search around the maximum found by optim
+- run the Markov chain starting at the maximum found by optim
+
+
