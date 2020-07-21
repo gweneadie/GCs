@@ -36,8 +36,7 @@ GCmcmc <- function(init, mydat, logLike, priors, N, transform.pars, propDF, thin
   
   # make a chain of the logLike values
   logLikechain = matrix( ncol=1, nrow=N )
-  logLikechain[1, ] = sum(testpars) + testpriors
-  
+
   # counter to keep track of acceptances
   accept = 0
   
@@ -50,11 +49,9 @@ GCmcmc <- function(init, mydat, logLike, priors, N, transform.pars, propDF, thin
   for( i in 2:(N*thinning) ){
       
       # draw trial model parameters
-      partry = init + propDF(...)
-       
-      # calculate priors for parameters
-      logpriorsinit = sum( log( priors( pars = transform.pars( init ), ... ) ) )
+      partry = init + propDF(npars, ...)
       
+      # value of log priors at new parameters
       logpriorstry = sum( log( priors( pars = transform.pars( partry ), ... ) ) )
       
       # if any of the new pars return 0 probability from prior, then reject points
@@ -62,42 +59,47 @@ GCmcmc <- function(init, mydat, logLike, priors, N, transform.pars, propDF, thin
         
         if(is.whole(i/thinning)){ 
           chain[i/thinning, ] = init 
-          logLikechain[i/thinning, ] = sum( logLike( pars=init, dat=mydat, transform.pars=transform.pars )) + logpriorsinit 
-          }
+        }
         
       }else{
+       
+        # find value of log likelihood at new parameters
+        logLiketry = sum( logLike( pars=partry, dat=mydat, transform.pars=transform.pars ))
         
-        # difference of logs of likelihood*prior for init and partry
-        difflog = sum( logLike( pars=partry, dat=mydat, transform.pars=transform.pars )) + logpriorstry - sum( logLike( pars=init, dat=mydat, transform.pars=transform.pars )) - logpriorsinit 
-        
-        
-        # if this gives a non-numeric answer, something is up, so open a browser
-        if( !is.numeric(difflog) ){ browser() }
-        
-        # if difflog is positive or if exponential of difflog is greater than a randomly generated number between 0 and 1, then accept
-        if( difflog > 0 | ( difflog > log( runif(1) ) ) ){
-          
-          # if the ith element is a multiple of thinning, then save the value in the chain
-          if(is.whole(i/thinning)){ 
-            
-            chain[i/thinning, ] = partry 
-            logLikechain[i/thinning, ] = sum( logLike( pars=partry, dat=mydat, transform.pars=transform.pars )) + logpriorstry             }
-          
-          # update initial value and track the acceptance
-          init = partry
-          accept = accept + 1
-          
-        }else{ # otherwise, reject and stay in same place in parameter space
+        # if any of the new pars return -Inf from the log likelihood, then reject points
+        if( any( !is.finite(logLiketry) ) ){
           
           if(is.whole(i/thinning)){ 
+            chain[i/thinning, ] = init 
+          }
+          
+        }else{
+          
+          # calculate priors for previous parameters
+          logpriorsinit = sum( log( priors( pars = transform.pars( init ), ... ) ) )
+          
+          # difference of logs of likelihood*prior for init and partry
+          difflog = logLiketry + logpriorstry - sum( logLike( pars=init, dat=mydat, transform.pars=transform.pars )) - logpriorsinit 
+        
+          # if this gives a non-numeric answer, something is up, so open a browser
+          if( !is.numeric(difflog) ){ browser() }
+          
+          # if difflog is positive or if exponential of difflog is greater than a randomly generated number between 0 and 1, then accept
+          if( difflog > 0 | ( difflog > log( runif(1) ) ) ){
             
-            chain[i/thinning, ] = init
-            logLikechain[i/thinning, ] = sum( logLike( pars=init, dat=mydat, transform.pars=transform.pars )) + logpriorsinit 
-            
+            # if the ith element is a multiple of thinning, then save the value in the chain
+            if(is.whole(i/thinning)){ 
+              chain[i/thinning, ] = partry 
             }
-          
-        } 
-        
+            
+            # update initial value and track the acceptance
+            init = partry
+            accept = accept + 1
+            
+          }
+            
+        }
+
       }
       
       # print progress bar if progressBar=TRUE
@@ -108,7 +110,7 @@ GCmcmc <- function(init, mydat, logLike, priors, N, transform.pars, propDF, thin
   if( !is.null(parnames) ){ colnames(chain) = parnames }
   
   # OUTPUT    
-  out = list(chain=as.mcmc(chain), acceptance.rate = accept/N, dat = mydat, priorfuncs=priors, logLikechain = as.mcmc(logLikechain))
+  out = list(chain=as.mcmc(chain), acceptance.rate = accept/N, dat = mydat, priorfuncs=priors)
   
 }
 
