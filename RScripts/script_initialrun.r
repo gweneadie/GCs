@@ -5,11 +5,11 @@ source("script_set-up-simGCstars.r")
 library(coda)
 
 # initial run
-runinit = GCmcmc(init = initpars, mydat = mydata, logDF = logDF.limepy, priors = prior.wrapper, N = 1e3, 
+runinit = GCmcmc(init = initpars, mydat = mydata, logLike = logDF.limepy, priors = prior.wrapper, N = 1e3, 
                  transform.pars = notransform.func, 
                  priorfuncs = list( singleunif.prior, singleunif.prior, normlog10M.prior, truncnorm.prior ),
                  ppars = list( gbounds, phi0bounds, log10Mpars, rhpars ),
-                 propDF = mypropDF, covmat = covariancematrix,
+                 propDF = mypropDF, covmat = covariancematrix, n.pars=4,
                  parnames = c("g", "Phi0", "M", "rh"))
 
 
