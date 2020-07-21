@@ -11,6 +11,8 @@
 # progressBar: logical, default TRUE. Controls whether the user sees a progress bar
 # parnames: optional character vector for the parameter names
 
+library(coda)
+
 GCmcmc <- function(init, mydat, logLike, priors, N, transform.pars, propDF, thinning=1, progressBar=TRUE, parnames = NULL, ...){
   
   # check that initial paramters are OK with the priors
@@ -49,7 +51,7 @@ GCmcmc <- function(init, mydat, logLike, priors, N, transform.pars, propDF, thin
   for( i in 2:(N*thinning) ){
       
       # draw trial model parameters
-      partry = init + propDF(npars, ...)
+      partry = init + propDF(...)
       
       # value of log priors at new parameters
       logpriorstry = sum( log( priors( pars = transform.pars( partry ), ... ) ) )
