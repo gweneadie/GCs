@@ -59,9 +59,7 @@ GCmcmc <- function(init, mydat, logLike, priors, N, transform.pars, propDF, thin
       # if any of the new pars return 0 probability from prior, then reject points
       if( any( !is.finite(logpriorstry) ) ){
         
-        if(is.whole(i/thinning)){ 
-          chain[i/thinning, ] = init 
-        }
+        if(is.whole(i/thinning)){ chain[i/thinning, ] = init }
         
       }else{
        
@@ -71,9 +69,7 @@ GCmcmc <- function(init, mydat, logLike, priors, N, transform.pars, propDF, thin
         # if any of the new pars return -Inf from the log likelihood, then reject points
         if( any( !is.finite(logLiketry) ) ){
           
-          if(is.whole(i/thinning)){ 
-            chain[i/thinning, ] = init 
-          }
+          if(is.whole(i/thinning)){ chain[i/thinning, ] = init }
           
         }else{
           
@@ -83,25 +79,23 @@ GCmcmc <- function(init, mydat, logLike, priors, N, transform.pars, propDF, thin
           # difference of logs of likelihood*prior for init and partry
           difflog = logLiketry + logpriorstry - sum( logLike( pars=init, dat=mydat, transform.pars=transform.pars )) - logpriorsinit 
         
-          # if this gives a non-numeric answer, something is up, so open a browser
-          if( !is.numeric(difflog) ){ browser() }
-          
           # if difflog is positive or if exponential of difflog is greater than a randomly generated number between 0 and 1, then accept
           if( difflog > 0 | ( difflog > log( runif(1) ) ) ){
             
             # if the ith element is a multiple of thinning, then save the value in the chain
             if(is.whole(i/thinning)){ 
-              chain[i/thinning, ] = partry 
+              
+              # save new value
+              chain[i/thinning, ] = partry  
+              
+              # update initial value and track the acceptance
+              init = partry
+              accept = accept + 1
+              
             }
             
-            # update initial value and track the acceptance
-            init = partry
-            accept = accept + 1
-            
-          }
-            
+          }else{ chain[i/thinning, ] = init }
         }
-
       }
       
       # print progress bar if progressBar=TRUE
