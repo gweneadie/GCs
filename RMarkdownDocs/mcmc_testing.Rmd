@@ -1,0 +1,213 @@
+---
+title: "Testing MCMC Code"
+author: "Gwen Eadie"
+date: "21/07/2020"
+output: html_document
+---
+
+## Simulated data
+
+Now that we are quite certain that the code for the LIMEPY DF, likelihood, and priors are working properly, we will test the MCMC code. 
+
+First, let's load the same sample data set of 500 stars, and source the appropriate functions:
+```{r}
+source("../RScripts/function_logLike_LIMEPY.r")
+source("../RScripts/function_priors.r")
+source("../RScripts/function_prior-wrapper.r")
+
+# load the simulated data for testing
+alldata = readRDS("../mockdata/snap_version2_dffix_2020-03-09.rds")
+# get a random sample of the stars
+nsamp = 500
+set.seed(123)
+mydata = alldata[sample(x = 1:nrow(alldata), size = nsamp, replace = FALSE), ]
+```
+
+Below are the data in $(r,v)$ space; the grey (transparent) points are all of the data, and the blue are the random subsample.
+```{r, eval=FALSE}
+
+plot(alldata$r, alldata$v, xlab = "r (kpc)", ylab = "v (100km/s)", col=rgb(0,0,0, alpha=0.03), cex.lab=1.5, cex.axis=1.5, main = "simulated data generated from a LIMEPY model")
+points(mydata$r, mydata$v, col="blue")
+grid()
+legend("topright", legend = c("all stars", "sample stars"), col = c("black", "blue"), pch = c(1,1))
+
+```
+
+### MCMC function 
+
+The function _GCmcmc()_ is used to generate a Markov chain that represents the target distribution. The arguments to the fucntion are:
+
+ * init: _initial parameter values_
+ * logLike: _a function for the log-likelihood_
+ * priors: _a list of functions for the priors_
+ * N: _the desired number of samples_
+ * transform.pars: _a function to transform the parameters into different space_
+ * propDF: _a function for the proposal distribution_
+ * thinning: _by default, every accept/reject step is saved and returned (i.e. thinning = 1), but you can alternatively thin the chain as you go and only save every ith value. For example, setting thinning = 3 will make it so only every third accept/reject step is saved and returned._
+ * progressBar: _logical indicating whether or not the user wants to see a progress bar while the chain is running_
+ * parnames: _optional character vector for the parameters (default is NULL)_
+ * ...: _other arguments to be passed to the prior functions, propDF function, etc._
+
+The function is stored in the following script, sourced and shown here:
+```{r}
+source("../RScripts/function_GCmcmc.r")
+```
+
+We use a multivariate normal for the proposal distribution. The function passed to propDF argument in GCmcmc is the following
+```{r}
+source("../RScripts/function_proposal-distribution-modelpars.r")
+
+# show the function
+mypropDF
+
+# make a dumby covariance matrix for LIMEPY, which has 4 model parameters
+covariancematrix = matrix(c(0.001,0,0,0, 
+                            0,0.007,0,0,
+                            0,0,5e4,0,
+                            0,0,0,0.02), nrow=4)
+
+# check that mypropDF returns values which will be added to the previous parameter values
+mypropDF(n.pars = 4, covmat = covariancematrix)
+
+# covariance matrix for SPES case
+SPEScovariancematrix = matrix(c(0.001, 0, 0, 0, 0,
+                            0, 0.007, 0, 0, 0,
+                            0, 0, 0.003, 0, 0,
+                            0, 0, 0, 1e4, 0,
+                            0, 0, 0, 0, 0.0002), nrow=5)
+
+mypropDF(n.pars = 5, covmat = SPEScovariancematrix)
+```
+
+We are not transforming the parameter values into a different space for sampling, but we still need to pass a function to the transform.pars argument in GCmcmc, so we create a transform function that actually doesn't transform the parameters at all. Let's take a look and test it.
+```{r}
+source("../RScripts/function_transform-parameters.r")
+
+# the transformation function we will use is notransform.func
+notransform.func
+
+# vector of parameter values
+testpars = c(0.3,5,-10, 93.7)
+
+notransform.func(x = testpars)
+
+rm(testpars)
+```
+
+The is.whole function is needed for the thinning parameter to work. 
+```{r}
+source("../RScripts/function_iswhole.r")
+
+# see how it works
+is.whole(0.1)
+
+is.whole(4)
+
+is.whole(-Inf)
+
+is.whole(NA)
+
+is.whole("hello")
+```
+
+## Setting up to use GCmcmc
+
+We will use the optim() values as our initial starting values for running GCmcmc. 
+```{r}
+# write a function to calculate the target density
+targetdensity <- function(init, mydat, logLike, priors=prior.wrapper, ... ){
+  
+  sum( logLike( pars=init, dat=mydat ) ) + sum( log( priors( pars = init, ... ) ) )
+}
+
+
+# some test parameters for g, phi0, M, and rh
+gtest = 1.5
+phi0test = 6.1
+Mtest = 1.2e5
+rhtest = 3.1
+testpars = c(gtest, phi0test, Mtest, rhtest)
+
+# hyperprior values
+gbounds = c(1e-3, 3.5) # bounds for uniform prior on g
+phi0bounds = c(1.5, 14) # bounds for uniform prior on phi_0
+log10Mpars = c( 5.85, 0.6 ) # mean and standard deviation for log10(M)
+rhpars = c(0, 30, 3.4, 0.2) # lower bound, upper bound, mean, sd for r_h
+
+# run optim
+test = optim(par = testpars, fn = targetdensity, mydat = mydata, logLike = logLike.limepy, priorfuncs = list(singleunif.prior, singleunif.prior, normlog10M.prior, truncnorm.prior), ppars = list( gbounds, phi0bounds, log10Mpars, rhpars), control=list(fnscale=-1) )
+
+initpars = test$par
+initpars
+
+```
+
+Now we are ready to run GCmcmc(). (Not run here because it takes a couple minutes).
+```{r, echo=FALSE, eval=FALSE}
+# let's just run it for 250 steps as a demo
+runinit = GCmcmc(init = initpars, mydat = mydata, logLike = logLike.limepy, priors = prior.wrapper, N = 500, 
+                 transform.pars = notransform.func, 
+                 priorfuncs = list( singleunif.prior, singleunif.prior, normlog10M.prior, truncnorm.prior ),
+                 ppars = list( gbounds, phi0bounds, log10Mpars, rhpars ),
+                 propDF = mypropDF, covmat = covariancematrix, n.pars=4,
+                 parnames = c("g", "Phi0", "M", "rh"))
+
+# see the structor of the output
+str(runinit)
+
+# save to file
+saveRDS(object = runinit, file = paste0("../results/initrun_LIMEPYdata_500_LIMEPYmodel_", Sys.Date(), ".rds"))
+```
+
+```{r}
+runinit <- readRDS("../results/initrun_LIMEPYdata_500_LIMEPYmodel_2020-07-21.rds")
+# plot the preliminary results to check that things look OK
+plot(runinit$chain)
+```
+
+Things seem to be working OK!
+
+## Automated adjustment of the proposal distribution
+
+Now we will test the function which does an automated tuning of the proposal distribution.
+```{r, eval=FALSE}
+source("../RScripts/function_adjustproposal.r")
+
+newrun = adjustproposal(initialrun = runinit, acceptrange = c(0.26,0.4), Nsteps = 250, yourpatience = 10, mydat = mydata, logLike = logLike.limepy, priors = prior.wrapper, transform.pars = notransform.func, priorfuncs = list( singleunif.prior, singleunif.prior, normlog10M.prior, truncnorm.prior ), ppars = list( gbounds, phi0bounds, log10Mpars, rhpars ), propDF = mypropDF, parnames = c("g", "Phi_0", "M", "r_h"), n.pars=4)
+
+str(newrun)
+
+# what is the new proposal distribution?
+newrun$newpropsd
+
+# save output to a file
+saveRDS(newrun, file = paste("../results/burnin_LIMEPYdata_500_LIMEPYmodel_", Sys.Date(), ".rds", sep="") )
+```
+
+# do the chains look like they are mixing better as the proposal distribution is updated every 500 steps?
+```{r}
+newrun <- readRDS(file = "../results/burnin_LIMEPYdata_500_LIMEPYmodel_2020-07-21.rds")
+plot(as.mcmc(newrun$chain))
+```
+
+The chains appear to be sampling more efficiently, and the mixing looks decent. Let's now use the proposal distribution we've settled on to sample the target distribution. (Not run here because it takes about 5 minutes)
+```{r, eval=FALSE}
+
+# final run after tuning is complete
+finalrun <- GCmcmc(init = newrun$newinitpars, mydat = mydata, logLike = logLike.limepy, priors = prior.wrapper, N = 5e3, transform.pars = notransform.func, priorfuncs = list( singleunif.prior, singleunif.prior, normlog10M.prior, truncnorm.prior ), ppars = list( gbounds, phi0bounds, log10Mpars, rhpars ), propDF = mypropDF, parnames = c("g", "Phi_0", "M", "r_h"), n.pars=4, covmat=newrun$newpropsd)
+
+# save chain to file
+saveRDS(object = finalrun, file = paste("../results/chain_LIMEPYdata_500_LIMEPYmodel_", Sys.Date(), ".rds", sep="") )
+```
+
+```{r}
+finalrun <- readRDS(file = "../results/chain_LIMEPYdata_500_LIMEPYmodel_2020-07-21.rds")
+plot(finalrun$chain)
+```
+
+### Plotting the posterior distribution
+
+
+
+
+
