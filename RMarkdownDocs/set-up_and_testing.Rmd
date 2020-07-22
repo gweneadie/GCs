@@ -436,12 +436,16 @@ optimvals <- readRDS('../results/optim_LIMEPYdata_SPESmodel.rds')
 optimvals
 
 ```
+
 The parameter estimates from optim are:
+
  * $\phi_0 = 2.09$
  * $B = 0.00013$
  * $\eta = 0.97$
  * $M = 125871 M_{\odot}$
  * $r_h = 0.24\text{pc}$
+ 
+ 
 ## Grid search for LIMEPY data, SPES model assumption
 
 ```{r}
@@ -504,4 +508,4 @@ g + facet_grid( Bbin ~ etabin ) + labs(title="Total Mass vs half-light radius", 
 
 ```
 
-
+  
