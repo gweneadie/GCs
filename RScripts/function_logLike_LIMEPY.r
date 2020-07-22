@@ -14,7 +14,7 @@ logLike.limepy = function(pars, dat, transform.pars=NULL, pot=NULL, DF=NULL){
   # transform parameters 
   if( !is.null( transform.pars ) ){  pars = transform.pars( pars ) }
   
-  # if the half-light radius or total mass parameters are negative, then return -Inf for every data point
+  # if ANY parameters are negative, then return -Inf for every data point
   if( any(pars<0) ){ return( rep( -Inf, nrow(dat) ) ) }
   
   # numerically determine the df given the parameter values
