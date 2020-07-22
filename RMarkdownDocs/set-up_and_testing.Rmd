@@ -6,9 +6,6 @@ output: html_document
 ---
 
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
 ## Introduction
 
 Our goal is to estimate the mass and cumulative mass profile of a globular cluster (GC) using the kinematic information (position and velocity) of its stars and assuming a physical model for the GC. 
@@ -41,13 +38,33 @@ For our intial tests, we use simulated kinematic data of stars following a LIMEP
 
 In order for a DF to correspond to physically realistic GC, all model parameters must be greater than zero. In the SPES model, $B$ and $\eta$ are also restricted between $0$ and $1$ to be physically meaningful. 
 
-Astronomers also have a lot of prior information about GCs in general, so we can put informative priors on things like the mass and half-light radius.
+Images and studies of GCs both within the Milky Way Galaxy and around other galaxies provide informative priors on things like the mass and half-light radius. GC masses span about an order of magnitude; astronomers tend to think in terms of $log_{10}M$ for GC masses, and would be comfortable setting the prior
+$$
+p(\log_{10}M) \sim N(\mu, \sigma^2)
+$$
+where the hyperparamters $\mu$ and $\sigma$ are defined in $\log_{10}M$. Our LIMEPY and SPES models, however, work in $M$ space, so we need to do a change of variables to obtain the prior $p(M)$. Let $\phi = h(M) = \log_{10}M$, then $p(\phi)\equiv p(\log_{10}M)$. We can use a change of variables to find $p(M)$:
+$$
+p(\phi) = p(M) \frac{dM}{d\phi} \\
+\rightarrow p(M) = \frac{p(\phi)}{\frac{dM}{d\phi}}
+$$
+where $\frac{dM}{d\phi} = 10^{\phi}\ln10$. Therefore,
+$$
+\begin{align}
+p(M) &=  \frac{p(\phi)}{10^{\phi}\ln10} \\
+ &= \frac{p(\log_{10}M)}{10^{\log_{10}M}\ln10} \\
+
+p(M) &= \frac{N(\mu,\sigma)}{M\ln10}
+\end{align}
+$$
+
+
+
 
 For our analysis, we choose the following priors for the LIMEPY parameters,
 $$
 g \sim \text{unif}(0.001, 3.5) \\
 \Phi_0 \sim \text{unif}(1.5, 14) \\
-\log_{10}M \sim \frac{N(\mu_M, \sigma_M)}{M\ln(10)} \\
+M \sim \frac{N(\mu, \sigma)}{M\ln(10)} \\
 r_h \sim N(a, b, \mu_{r_h}, \sigma_{r_h}). \\
 $$
 where $\mu_M = 5.85$ and $\sigma_M=0.6$ (defined in $\log_{10}M$), and where in the last line we have a truncated normal distribution. We set the hyperparameters of the lower and upper bounds of $r_h$ to be $a=0$ and $b=30$ respectively. The mean and standard deviation for the $r_h$ parameter are 3.4 and 0.2.
@@ -57,7 +74,7 @@ $$
 \Phi_0 \sim \text{unif}(1.5, 14) \\
 B \sim \text{unif}(0,1) \\
 \eta \sim \text{unif}(0,1) \\
-\log_{10}M \sim \frac{N(\mu_M, \sigma_M)}{M\ln(10)} \\
+M \sim \frac{N(\mu_M, \sigma_M)}{M\ln(10)} \\
 r_h \sim N(a, b, \mu_{r_h}, \sigma_{r_h}), \\
 $$
 where we use the same hyperparameter values given above for $\mu_M, \sigma_M, a, b, \mu_{r_h},$ and $\sigma_{r_h}$.
@@ -120,8 +137,6 @@ plot(x = Mvalues, y = sapply(X = Mvalues, FUN = normlog10M.prior, ppars = log10M
 grid()
 ```
 
-_Is this representative of our prior information on GC masses? It seems like a GC of 1 million solar masses is really large?_
-
 
 ### prior on $r_h$
 ```{r}
@@ -137,7 +152,11 @@ source('../RScripts/function_prior-wrapper.r')
 prior.wrapper
 
 # some test parameters for g, phi0, M, and rh
-testpars = c(1.5, 6.1, 1.2e5, 3.1)
+gtest = 1.5
+phi0test = 6.1
+Mtest = 1.2e5
+rhtest = 3.1
+testpars = c(gtest, phi0test, Mtest, rhtest)
 
 # Test the prior wrapper
 prior.wrapper(pars = testpars, priorfuncs = list(singleunif.prior, singleunif.prior, normlog10M.prior, truncnorm.prior), ppars = list(gbounds, phi0bounds, log10Mpars, rhpars))
@@ -166,20 +185,20 @@ logLike.limepy
 Next, I focus on the line which numerically calculates the DF in the logLike.limepy function. For this example I use a small ($n=10$) sample of simulated data.
 ```{r}
 # load the simulated data for testing
-mydata = readRDS("../mockdata/snap_version2_dffix_2020-03-09.rds")
+alldata = readRDS("../mockdata/snap_version2_dffix_2020-03-09.rds")
 # get a random sample of the stars
 nsamp = 10
 set.seed(123)
-mydata = mydata[sample(x = 1:nrow(mydata), size = nsamp, replace = FALSE), ]
+smalldata = alldata[sample(x = 1:nrow(alldata), size = nsamp, replace = FALSE), ]
 
 # what does the data frame look like?
-str(mydata)
+str(smalldata)
 
 # numerically obtain the LIMEPY DF given by the test parameter values defined earlier
 LIMEPYdf = limepy$limepy(g = testpars[1], phi0 = testpars[2], M=testpars[3], rh=testpars[4])
 
 # now try using this model with the mock data to calculate the DF at the data points
-LIMEPYdf$df( mydata$r, mydata$v )
+LIMEPYdf$df( smalldata$r, smalldata$v )
 ```
 
 This looks like it is working OK. What if I pass it bad parameter values?
@@ -189,34 +208,34 @@ badpars = c(0.1,2.1, 100, -3.4)
 badLIMEPYdf = limepy$limepy(g = badpars[1], phi0 = badpars[2], M=badpars[3], rh=badpars[4])
 
 # now try using this model with the mock data to calculate the DF at the data points
-badLIMEPYdf$df( mydata$r, mydata$v )
+badLIMEPYdf$df( smalldata$r, smalldata$v )
 
 ```
 We receive an error from the Python code. Will come back to this in a minute. In the meantime, let's go back to the model that had reasonable $\mathbf{\theta}$ values and calculate the likelihood at the data points. The likelihood is the DF divided by the total mass M, so this would give us
 ```{r}
-LIMEPYdf$df( mydata$r, mydata$v )/testpars[3]
+LIMEPYdf$df( smalldata$r, smalldata$v )/testpars[3]
 ```
 
 and a log-likelihood value of 
 ```{r}
-log( LIMEPYdf$df( mydata$r, mydata$v )/testpars[3] )
+log( LIMEPYdf$df( smalldata$r, smalldata$v )/testpars[3] )
 
 ```
 
 Is this what our function logLike.limepy() returns?
 ```{r}
-logLike.limepy(pars = testpars, dat = mydata)
+logLike.limepy(pars = testpars, dat = smalldata)
 
 ```
 Yes. Good!
 
 How does my function deal with the bad parameter values?
 ```{r}
-logLike.limepy(pars = badpars, dat = mydata)
+logLike.limepy(pars = badpars, dat = smalldata)
 
 lessobviousbadpars = c(1.5, 1.5, 1e5, 0.1)
 
-logLike.limepy(pars = lessobviousbadpars, dat=mydata)
+logLike.limepy(pars = lessobviousbadpars, dat=smalldata)
 ```
 
 
@@ -224,15 +243,15 @@ logLike.limepy(pars = lessobviousbadpars, dat=mydata)
 ## Running optim on the log target distribution
 Now I will run an optimizer on the log-target distribution (log-likelihood plus log-priors) to see if it is reasonable to find a maximum in parameter space given our simulated data. Let's use more data ($n=500$) this time.
 ```{r }
-# load the simulated data for testing
-mydata = readRDS("../mockdata/snap_version2_dffix_2020-03-09.rds")
 # get a random sample of the stars
 nsamp = 500
 set.seed(123)
-mydata = mydata[sample(x = 1:nrow(mydata), size = nsamp, replace = FALSE), ]
+mydata = alldata[sample(x = 1:nrow(alldata), size = nsamp, replace = FALSE), ]
 
 # write a function to calculate the target density
 targetdensity <- function(init, mydat, logLike, priors=prior.wrapper, ... ){
+  
+  if( any( !is.finite(log(priors(pars = init, ...)))) ){ return(-Inf)}
   
   sum( logLike( pars=init, dat=mydat ) ) + sum( log( priors( pars = init, ... ) ) )
 }
@@ -270,7 +289,7 @@ saveRDS(targetvalues, file = paste("../results/gridsearch_", Sys.Date(), sep="")
 ```
 
 I will load the results here and show the surface of the log-target density values in a conditional plot that focuses on the $M$ and $r_h$ grid. 
-```{r, message=FALSE, fig.height=7}
+```{r, message=FALSE, fig.height=7, eval=FALSE}
 library(ggplot2)
 library(dplyr)
 
@@ -308,10 +327,7 @@ g + facet_grid( gbin ~ phi0bin ) + labs(title="Total Mass vs half-light radius",
 
 ```
 
-This surface looks slightly problematic from a sampling perspetive. Where is the max log-target value? 
-```{r}
-conditional[which.max(conditional$target), ]
-```
+This surface looks slightly problematic from a sampling perspetive. 
 
 This is very different from optim's result using the same set of data!
 ```{r}
@@ -323,5 +339,169 @@ I'm quite confused by this... some things to try:
 
 - re-run the grid search around the maximum found by optim
 - run the Markov chain starting at the maximum found by optim
+
+
+# LIMPEY Data, SPES model assumption
+
+Now let's set up the SPES likelihood function. 
+```{r}
+source("../RScripts/function_logLike_SPES.r")
+logLike.spes
+```
+Next, I focus on the line which numerically calculates the DF in the logLike.spes function. For this example I use a small ($n=10$) sample of simulated data.
+```{r}
+# use the small sample of data that we used earlier
+smalldata
+
+# SPES takes in a different order for the parameters than LIMEPY
+# SPES order is phi0, B, eta, M, rh
+Btest = 0.5
+etatest = 0.5
+SPEStestpars = c(phi0test, Btest, etatest, Mtest, rhtest)
+  
+# numerically obtain the SPES DF given by the test parameter values defined earlier
+SPESdf = limepy$spes(phi0 = SPEStestpars[1], B = SPEStestpars[2], eta = SPEStestpars[3], M = SPEStestpars[4], rh= SPEStestpars[5])
+
+# now try using this model with the mock data to calculate the DF at the data points
+SPESdf$df( smalldata$r, smalldata$v )
+```
+
+Out of curiousity, how different are these form the LIMEPY DF values?
+```{r}
+plot(LIMEPYdf$df( smalldata$r, smalldata$v ), SPESdf$df(smalldata$r, smalldata$v), xlab="LIMEPY DF at (r,v)", ylab="SPES DF at (r,v)")
+grid()
+abline(0,1,lty=2)
+```
+ My function logLike.SPES should return the same values as the following
+```{r}
+log(SPESdf$df( smalldata$r, smalldata$v )/SPEStestpars[4])
+
+logLike.spes(pars = SPEStestpars, dat = smalldata)
+```
+Great! Those match. How does my function deal with bad parameter values?
+```{r}
+badSPESpars = c(0.1,0.09, 0.99, 100.0, -3.4)
+
+logLike.spes(pars = badSPESpars, dat = smalldata)
+```
+
+
+## Optim run: LIMEPY data, SPES model assumption
+
+We need to set the hyperparameters for $B$ and $\eta$, which will have uniform priors.The other hyperparameters will stay the same.
+```{r, eval=FALSE} 
+Bbounds = c(0,1)
+etabounds = c(0,1)
+
+# check that starting values are OK
+targetdensity(init = SPEStestpars, mydat = mydata, logLike = logLike.spes, priorfuncs = list(singleunif.prior, singleunif.prior, singleunif.prior, normlog10M.prior, truncnorm.prior), ppars = list( phi0bounds, Bbounds, etabounds, log10Mpars, rhpars))
+
+
+# # run this if you want to see the parameters and targetdensity values as optim runs
+# wrap_f <- function(par, mydat, logLike, priors = prior.wrapper, ...){
+#     cat(par, "\n",  targetdensity(par, mydat, logLike, priors, ... ), "\n")
+#     targetdensity(par, mydat, logLike, priors, ... )
+# }
+
+# test = optim(par = SPEStestpars, fn = wrap_f, control=list(fnscale=-1), mydat = mydata, logLike = logLike.spes,  ppars = list( phi0bounds, Bbounds, etabounds, log10Mpars, rhpars), priorfuncs = list(singleunif.prior, singleunif.prior, singleunif.prior, normlog10M.prior, truncnorm.prior))
+
+# run optim
+test = optim(par = SPEStestpars, fn = targetdensity, mydat = mydata, logLike = logLike.spes, priorfuncs = list(singleunif.prior, singleunif.prior, singleunif.prior, normlog10M.prior, truncnorm.prior), ppars = list( phi0bounds, Bbounds, etabounds, log10Mpars, rhpars), control=list(fnscale=-1))
+         
+# run again just to be safe
+test2 = optim(par = test$par, fn = targetdensity, mydat = mydata, logLike = logLike.spes, priorfuncs = list(singleunif.prior, singleunif.prior, singleunif.prior, normlog10M.prior, truncnorm.prior), ppars = list( phi0bounds, Bbounds, etabounds, log10Mpars, rhpars), control=list(fnscale=-1))
+
+# still hasn't stabilized
+test3 = optim(par = test2$par, fn = targetdensity, mydat = mydata, logLike = logLike.spes, priorfuncs = list(singleunif.prior, singleunif.prior, singleunif.prior, normlog10M.prior, truncnorm.prior), ppars = list( phi0bounds, Bbounds, etabounds, log10Mpars, rhpars), control=list(fnscale=-1))
+
+# wow this is taking awhile
+test4 = optim(par = test3$par, fn = targetdensity, mydat = mydata, logLike = logLike.spes, priorfuncs = list(singleunif.prior, singleunif.prior, singleunif.prior, normlog10M.prior, truncnorm.prior), ppars = list( phi0bounds, Bbounds, etabounds, log10Mpars, rhpars), control=list(fnscale=-1))
+
+# again!!
+test5 = optim(par = test4$par, fn = targetdensity, mydat = mydata, logLike = logLike.spes, priorfuncs = list(singleunif.prior, singleunif.prior, singleunif.prior, normlog10M.prior, truncnorm.prior), ppars = list( phi0bounds, Bbounds, etabounds, log10Mpars, rhpars), control=list(fnscale=-1))
+
+# maybe it's good now?
+test6 = optim(par = test5$par, fn = targetdensity, mydat = mydata, logLike = logLike.spes, priorfuncs = list(singleunif.prior, singleunif.prior, singleunif.prior, normlog10M.prior, truncnorm.prior), ppars = list( phi0bounds, Bbounds, etabounds, log10Mpars, rhpars), control=list(fnscale=-1))
+
+# ok it looks more stable now
+test7 = optim(par = test6$par, fn = targetdensity, mydat = mydata, logLike = logLike.spes, priorfuncs = list(singleunif.prior, singleunif.prior, singleunif.prior, normlog10M.prior, truncnorm.prior), ppars = list( phi0bounds, Bbounds, etabounds, log10Mpars, rhpars), control=list(fnscale=-1))
+
+# good enough!
+saveRDS(test7, paste0("../results/optim_LIMEPYdata_SPESmodel", ".rds") )
+```
+
+What are the optimal parameter values?
+```{r}
+optimvals <- readRDS('../results/optim_LIMEPYdata_SPESmodel.rds')
+optimvals
+
+```
+The parameter estimates from optim are:
+ * $\phi_0 = 2.09$
+ * $B = 0.00013$
+ * $\eta = 0.97$
+ * $M = 125871 M_{\odot}$
+ * $r_h = 0.24\text{pc}$
+## Grid search for LIMEPY data, SPES model assumption
+
+```{r}
+# setting up the grid
+griddim = 13
+Bbounds = c(0, 1) # assuming truncated uniform prior
+etabounds = c(0, 1) # assuming truncated uniform prior
+Bseq = seq(1e-1, 1, length.out = griddim)
+etaseq = seq(1e-1, 1, length.out = griddim)
+phi0seq = seq(1.5, 14, length.out = griddim)
+Mseq = seq(1e5, 1.5e5, length.out = griddim)
+rhseq = seq(1e-2, 30, length.out = griddim)
+
+# need a different grid because 5 parameters now
+pargridSPES = expand.grid(phi0 = phi0seq, B = Bseq, eta = etaseq, M = Mseq, rh = rhseq)
+
+```
+
+I already ran a grid search, which took system.time(): 
+user    system   elapsed 
+11668.212     5.779 11809.574 
+(in seconds, so about 3.3 hours)
+This is what I did (not run here)
+
+```{r, eval=FALSE}
+system.time( SPEStest <- apply(X = pargridSPES, FUN = targetdensity, MARGIN = 1, mydat = mydata, logLike = logLike.spes, priorfuncs = list(singleunif.prior, singleunif.prior, singleunif.prior, normlog10M.prior, truncnorm.prior), ppars = list(phi0bounds, Bbounds, etabounds, log10Mpars, rhpars) ) )
+
+saveRDS(SPEStest, file = paste("../results/gridsearchSPES_", Sys.Date(), sep=""))
+```
+
+Now I will load the results and plot them.
+```{r}
+library(ggplot2)
+library(dplyr)
+
+SPEStarget <- readRDS("../results/gridsearchSPES_2020-07-22")
+# add the the dataframe
+pargridSPES$target = SPEStarget
+
+# replace -Inf with NAs for plotting purposes
+pargridSPES$target <- na_if(x = pargridSPES$target, y = -Inf)
+
+# for plotting as a conditional plot, place target values into 5 bins in g and 5 bins in phi0
+conditional = mutate(pargridSPES, phi0bin = ggplot2::cut_interval(x = pargridSPES$phi0, n = 5) ) %>% 
+  mutate(Bbin = ggplot2::cut_interval(x = pargridSPES$B, n=5)) %>%
+    mutate(etabin = ggplot2::cut_interval(x = pargridSPES$eta, n=5)) %>%
+     group_by(M, rh, phi0bin, Bbin, etabin) %>% # then group by these bins, M, and r_h
+      summarize(target = mean(target, na.rm = TRUE)) # and for every M and r_h, take the mean log target for every g and phi_0 combination
+
+# make the base plot
+g <- ggplot(conditional, aes(x=rh, y=M, fill=target)) + 
+  geom_raster()
+
+# make a conditional plot by binning the results 
+g + facet_grid( phi0bin ~ Bbin ) + labs(title="Total Mass vs half-light radius", caption = "LIMEPY data, SPES model", subtitle="log target density within each phi0 (row) and B (column) bin") + theme_bw() + theme(strip.text = element_text(size = 14), text = element_text(size=14), panel.grid.major = element_blank(), panel.grid.minor = element_blank()) 
+
+g + facet_grid( phi0bin ~ etabin ) + labs(title="Total Mass vs half-light radius", caption = "LIMEPY data, SPES model", subtitle="log target density within each phi0 (row) and eta (column) bin") + theme_bw() + theme(strip.text = element_text(size = 14), text = element_text(size=14), panel.grid.major = element_blank(), panel.grid.minor = element_blank()) 
+
+g + facet_grid( Bbin ~ etabin ) + labs(title="Total Mass vs half-light radius", caption = "LIMEPY data, SPES model", subtitle="log target density within each B (row) and eta (column) bin") + theme_bw() + theme(strip.text = element_text(size = 14), text = element_text(size=14), panel.grid.major = element_blank(), panel.grid.minor = element_blank()) 
+
+```
 
 
