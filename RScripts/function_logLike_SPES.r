@@ -23,20 +23,12 @@ logLike.spes = function(pars, dat, transform.pars=NULL){
   lmodel = try(limepy$spes(phi0 = pars[1], B = pars[2], eta = pars[3], M = pars[4], rh=pars[5]), silent=TRUE)
  
   # if there is an error because of bad parameter values (i.e. unphysical model) then open a browser to see what's happening. Return -Inf
-  if( any(class(lmodel)=="try-error") ){
-    
-    output = rep( -Inf, nrow(dat) )
-    
-  }else{
+  if( any(class(lmodel)=="try-error") ){ output = rep( -Inf, nrow(dat) ) }else{
     
     # if there is not an error, then calculate likelihood of the data (r, v in GC-centered coordinates)
     output = try( log( (lmodel$df( dat$r, dat$v )) /pars[4] ), silent = TRUE)
     
-    # if there is an error then open a browser to see what's happening. Return -Inf
-    if( any(class(output)=="try-error") ){
-      
-      output = rep( -Inf, nrow(dat) )
-    }
+    if( any(class(output)=="try-error") ){ output = rep( -Inf, nrow(dat) ) }
     
   }
 
