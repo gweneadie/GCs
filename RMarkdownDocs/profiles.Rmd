@@ -1,0 +1,132 @@
+---
+title: "Profiles for GCs"
+author: "Gwen Eadie"
+date: "27/07/2020"
+output: html_document
+---
+
+# Mass Density and Cumulative Mass Profiles from Target samples
+
+First load the samples from the target distribution and the function to grab the potential and r values provided by limepy for each set of parameter values in the Markov chain.
+```{r}
+# load results
+target <- readRDS("../results/chain_LIMEPYdata_500_LIMEPYmodel_2020-07-21.rds")
+
+# source profile code
+source("../RScripts/function_profiles.r")
+
+# this is what the function does
+profiles
+```
+
+```{r, eval=FALSE}
+# find r and phi for every set of parameter values
+allrphirho <- apply(X = target$chain, MARGIN = 1, FUN = profiles)
+saveRDS(allrphirho, file = paste0("../results/profiles_", Sys.Date(), ".rds") )
+```
+
+```{r, echo=FALSE}
+# read in data frame
+allrphirho <- readRDS("../results/profiles_2020-07-29.rds")
+
+# I want the max r, min phi, and max rho for plotting purposes, and that's what these lines give me
+library(dplyr)
+bigdataframe <- bind_rows(allrphirho, .id = "column_label")
+maxr <- max(bigdataframe$r)
+minphi <- min(bigdataframe$phi)
+maxrho <- max(bigdataframe$rho)
+```
+
+Next, we show the potential $\Phi$ as a function of distance $r$ from the centre of the cluster, given the posterior distribution samples. In the figure below, each line shows the $\Phi(r)$ given the one set of model parameters in our sample from the target distribution. The lines are plotted with semi transparency so the density of lines is more visible. 
+```{r, eval=FALSE}
+png(filename = paste0("../results/Figures/potential_profile_", Sys.Date(), ".png"), width = 1000, height = 800)
+par(mar=c(5,6,2,2))
+plot(allrphirho[[1]]$r, allrphirho[[1]]$phi, type="l", xlab="r (pc)", ylab=expression(Phi(r)), cex.lab=2.5, cex.axis=2.5, xlim=c(0, maxr), ylim=c(minphi, 0))
+grid()
+lapply(X = allrphirho, FUN = function(X) lines(X$r, X$phi, col=rgb(0,0,0,0.01)) )
+
+dev.off()
+
+```
+
+![Figure 1: Estimated potential profile](../results/Figures/potential_profile_2020-07-29.png)
+
+We can do the similar thing for the density profile of the GC.
+```{r, eval=FALSE}
+png(filename = paste0("../results/Figures/density_profile_", Sys.Date(), ".png"), width=1000, height=800)
+
+par(mar=c(5,6,2,2))
+plot(allrphirho[[1]]$r, allrphirho[[1]]$rho, type="l", xlab="r (pc)", ylab=expression(rho), cex.lab=2.5, cex.axis=2.5, xlim = c(0,maxr), ylim=c(0,maxrho))
+grid()
+lapply(X = allrphirho, FUN = function(X) lines(X$r, X$rho, col=rgb(0,0,0,0.01)) )
+
+dev.off()
+```
+
+![Figure 2: Estimated density profile](../results/Figures/density_profile_2020-07-29.png)
+
+
+OK, now I will try calculating the mass profile. Physically the mass contained within some distance $r$ of the cluster can be found by integrating the mass density $\rho (r)$ and assuming spherical symmetry
+$$ M(r<R) = 4\pi\int \rho (r) r^2 dr $$
+
+We don't have an analytic expression for $\rho (r)$, unfortunately, so we will have to numerically integrate. The limepy model returns a set of $N$ pairs pf $r$ and $\rho (r)$ values. The integrand is $\rho (r) r^2$, so let's plot this function to see how it looks:
+```{r}
+testpars <- target$chain[2, ]
+testpars
+# calculate model for these parameter values
+exmodel <- limepy$limepy(g = testpars[1], phi0 = testpars[2], M = testpars[3], rh = testpars[4])
+# plot the mass density profile
+plot(exmodel$r, exmodel$rho*exmodel$r^2, xlab="r (pc)", ylab=expression(rho(r)))
+```
+This doesn't look too terrible, but we also don't want to integrate with so few points. It is a smooth function, so we will fit a spline to this function and then numerically integrate that spline. As an example, here is how well a spline fit to the points above can represent this function of $\rho (r) r^2$:
+```{r}
+testspline <- splinefun(x = exmodel$r, y = 4*pi*exmodel$rho*exmodel$r^2, method = "natural")
+par(mar=c(5,6,2,2))
+plot(exmodel$r, 4*pi*exmodel$rho*exmodel$r^2, xlab="r (pc)", ylab=expression(rho(r)*r^2), cex.lab=1.5, cex.axis=1.5)
+grid()
+curve(testspline, n=1e4, col="blue", add=TRUE)
+```
+
+To integrate the spline and therefor obtain the mass within a variety of radii $r$, I use the function _integrate()_. For each $r_i$ returned by limepy (except $i=1$, which is 0), we integrate the spline function from $r=0$ to $r_i$. For each $i$, the section is subdivided into 100.
+```{r}
+# make a new column in the data frame
+exmodel$mass <- 0
+for(i in 2:length(exmodel$r)){
+  exmodel$mass[i] <- integrate(f = testspline, lower = exmodel$r[1], upper = exmodel$r[i], subdivisions = 100)$value
+}
+```
+Now we can plot the mass profile:
+```{r}
+par(mar=c(5,6,2,2))
+plot(exmodel$r, exmodel$mass, xlab="r (pc)", ylab = expression(M(r<R)~(M['\u0298'])), cex.lab=1.5, cex.lab=1.5, type="l")
+```
+
+Next, we will do this for _every_ set of parameters in the Markov chain! (It took maybe 30 minutes for this to run, so not run here). We will also calculate the median of the total mass parameter from the posterior samples and include this as a horizontal line on the figure.
+```{r, eval=FALSE}
+# calculate a mass profile for every set of parameter values from the posterior distribution samples
+allmassprofiles <- apply(X = target$chain, MARGIN = 1, FUN = massprofile)
+
+# save because that took a while!
+saveRDS(allmassprofiles, file = paste0("../results/massprofiles_", Sys.Date()))
+
+# max M for plotting
+bigmassdataframe <- bind_rows(allmassprofiles, .id = "column_label")
+maxM <- max(bigmassdataframe$mass)
+
+# plot these
+png(filename = paste0("../results/Figures/mass_profile_", Sys.Date(), ".png"), width = 900)
+
+par(mar=c(5,6,2,2))
+plot(allmassprofiles[[1]]$r, allmassprofiles[[1]]$mass, type="l", xlab="r (pc)", ylab=expression(M(r<R)~(M['\u0298'])), cex.lab=2.5, cex.axis=2, xlim = c(0,maxr), ylim=c(0,maxM))
+grid()
+lapply(X = allmassprofiles, FUN = function(X) lines(X$r, X$mass, col=rgb(0,0,0,0.01)) )
+
+abline(h=median(target$chain[,3]), col="blue", lty=2)
+
+dev.off()
+
+```
+
+![Figure 3: Estimated cumulative mass profile](../results/Figures/mass_profile_2020-07-29.png)
+
+OK that's pretty neat! Where is the median estimate of the total mass?
