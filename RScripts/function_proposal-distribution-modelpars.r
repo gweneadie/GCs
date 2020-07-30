@@ -1,4 +1,4 @@
 library(MASS)
 # proposal distribution
-mypropDF <- function(npars, covmat) mvrnorm(Sigma=covmat, mu=rep(0, npars) )
+mypropDF <- function(n.pars, covmat, ...) mvrnorm(Sigma=covmat, mu=rep(0, n.pars) )
 
