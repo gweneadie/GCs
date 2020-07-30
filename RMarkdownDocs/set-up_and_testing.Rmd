@@ -268,6 +268,8 @@ It's a good idea to run optim again from these final parameter values, to double
 test2 = optim(par = test$par, fn = targetdensity, mydat = mydata, logLike = logLike.limepy, priorfuncs = list(singleunif.prior, singleunif.prior, normlog10M.prior, truncnorm.prior), ppars = list( gbounds, phi0bounds, log10Mpars, rhpars), control=list(fnscale=-1) )
 
 print(test2)
+
+saveRDS(test2, file = "../results/optim_LIMEPYdata_LIMEPYmodel.rds")
 ```
 
 It looks OK, the results barely changed and I think the parameter estimates look reasonable? 
@@ -289,7 +291,7 @@ saveRDS(targetvalues, file = paste("../results/gridsearch_", Sys.Date(), sep="")
 ```
 
 I will load the results here and show the surface of the log-target density values in a conditional plot that focuses on the $M$ and $r_h$ grid. 
-```{r, message=FALSE, fig.height=7, eval=FALSE}
+```{r, message=FALSE, fig.height=7}
 library(ggplot2)
 library(dplyr)
 
