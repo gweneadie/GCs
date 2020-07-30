@@ -1,7 +1,7 @@
 # set-up script for analysis
 
 # source limepy function that uses reticulate
-source("function_logDFlimepy.r")
+source("function_logLike_LIMEPY.r")
 library(MASS)
 source("function_transform-parameters.r")
 source("function_proposal-distribution-modelpars.r")
