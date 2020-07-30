@@ -1,15 +1,15 @@
 
 # use optim to find the maximum and the second derivative of the likelihood times prior
-source('function_logDFlimepy.r')
+source('function_logLike_LIMEPY.r')
 source('function_logDFspes.r')
 source('function_priors.r')
 source('function_prior-wrapper.r')
 source('function_transform-parameters.r')
 
 # likelihood times prior function
-likeprior <- function(init, mydat, logDF, priors=prior.wrapper, ... ){
+likeprior <- function(init, mydat, logLike, priors=prior.wrapper, ... ){
   
-  sum( logDF( pars=init, dat=mydat ) ) + sum( log( priors( pars = init, ... ) ) )
+  sum( logLike( pars=init, dat=mydat ) ) + sum( log( priors( pars = init, ... ) ) )
   
   
 }
@@ -33,7 +33,12 @@ rhpars = c(0, 30, 3.4, 0.2) # lower bound, upper bound, mean, sd for truncated n
 initpars = c(1.5, 5., 120000., 3.)
 
 # run optim
-test = optim(par = initpars, fn = likeprior, mydat = mydata, logDF = logDF.limepy, priorfuncs = list(singleunif.prior, singleunif.prior, normlog10M.prior, truncnorm.prior), ppars = list( gbounds, phi0bounds, log10Mpars, rhpars), control=list(fnscale=-1) )
+test = optim(par = initpars, fn = likeprior, mydat = mydata, logLike = logLike.limepy, priorfuncs = list(singleunif.prior, singleunif.prior, normlog10M.prior, truncnorm.prior), ppars = list( gbounds, phi0bounds, log10Mpars, rhpars), control=list(fnscale=-1) )
+
+# run again with starting values where last one ended
+test2 = optim(par = test$par, fn = likeprior, mydat = mydata, logLike = logLike.limepy, priorfuncs = list(singleunif.prior, singleunif.prior, normlog10M.prior, truncnorm.prior), ppars = list( gbounds, phi0bounds, log10Mpars, rhpars), control=list(fnscale=-1) )
+
+test2
 
 ########### run optim for spes
 # hyperprior values
