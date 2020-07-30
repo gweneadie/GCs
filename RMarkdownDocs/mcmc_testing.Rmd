@@ -4,7 +4,9 @@ author: "Gwen Eadie"
 date: "21/07/2020"
 output: html_document
 ---
-
+```{r}
+knitr::opts_chunk$set(fig.width=10, fig.height=11)
+```
 ## Simulated data
 
 Now that we are quite certain that the code for the LIMEPY DF, likelihood, and priors are working properly, we will test the MCMC code. 
@@ -24,16 +26,16 @@ mydata = alldata[sample(x = 1:nrow(alldata), size = nsamp, replace = FALSE), ]
 ```
 
 Below are the data in $(r,v)$ space; the grey (transparent) points are all of the data, and the blue are the random subsample.
-```{r, eval=FALSE}
-
-plot(alldata$r, alldata$v, xlab = "r (kpc)", ylab = "v (100km/s)", col=rgb(0,0,0, alpha=0.03), cex.lab=1.5, cex.axis=1.5, main = "simulated data generated from a LIMEPY model")
+```{r}
+par(mar=c(5,5,2,2))
+plot(alldata$r, alldata$v, xlab = "r (pc)", ylab = "v (100km/s)", col=rgb(0,0,0, alpha=0.03), cex.lab=1.5, cex.axis=1.5, main = "simulated data generated from a LIMEPY model")
 points(mydata$r, mydata$v, col="blue")
 grid()
 legend("topright", legend = c("all stars", "sample stars"), col = c("black", "blue"), pch = c(1,1))
 
 ```
 
-### MCMC function 
+## MCMC function 
 
 The function _GCmcmc()_ is used to generate a Markov chain that represents the target distribution. The arguments to the fucntion are:
 
@@ -70,10 +72,10 @@ covariancematrix = matrix(c(0.001,0,0,0,
 mypropDF(n.pars = 4, covmat = covariancematrix)
 
 # covariance matrix for SPES case
-SPEScovariancematrix = matrix(c(0.001, 0, 0, 0, 0,
-                            0, 0.007, 0, 0, 0,
+SPEScovariancematrix =  matrix(c(0.001, 0, 0, 0, 0,
+                            0, 1e-6, 0, 0, 0,
                             0, 0, 0.003, 0, 0,
-                            0, 0, 0, 1e4, 0,
+                            0, 0, 0, 1e2, 0,
                             0, 0, 0, 0, 0.0002), nrow=5)
 
 mypropDF(n.pars = 5, covmat = SPEScovariancematrix)
@@ -110,35 +112,11 @@ is.whole(NA)
 is.whole("hello")
 ```
 
-## Setting up to use GCmcmc
+## Using GCmcmc - LIMEPY data, LIMEPY model
 
 We will use the optim() values as our initial starting values for running GCmcmc. 
 ```{r}
-# write a function to calculate the target density
-targetdensity <- function(init, mydat, logLike, priors=prior.wrapper, ... ){
-  
-  sum( logLike( pars=init, dat=mydat ) ) + sum( log( priors( pars = init, ... ) ) )
-}
-
-
-# some test parameters for g, phi0, M, and rh
-gtest = 1.5
-phi0test = 6.1
-Mtest = 1.2e5
-rhtest = 3.1
-testpars = c(gtest, phi0test, Mtest, rhtest)
-
-# hyperprior values
-gbounds = c(1e-3, 3.5) # bounds for uniform prior on g
-phi0bounds = c(1.5, 14) # bounds for uniform prior on phi_0
-log10Mpars = c( 5.85, 0.6 ) # mean and standard deviation for log10(M)
-rhpars = c(0, 30, 3.4, 0.2) # lower bound, upper bound, mean, sd for r_h
-
-# run optim
-test = optim(par = testpars, fn = targetdensity, mydat = mydata, logLike = logLike.limepy, priorfuncs = list(singleunif.prior, singleunif.prior, normlog10M.prior, truncnorm.prior), ppars = list( gbounds, phi0bounds, log10Mpars, rhpars), control=list(fnscale=-1) )
-
-initpars = test$par
-initpars
+initpars <- readRDS("../results/optim_LIMEPYdata_LIMEPYmodel.rds")
 
 ```
 
@@ -184,7 +162,7 @@ newrun$newpropsd
 saveRDS(newrun, file = paste("../results/burnin_LIMEPYdata_500_LIMEPYmodel_", Sys.Date(), ".rds", sep="") )
 ```
 
-# do the chains look like they are mixing better as the proposal distribution is updated every 500 steps?
+Do the chains look like they are mixing better as the proposal distribution is updated every 500 steps?
 ```{r}
 newrun <- readRDS(file = "../results/burnin_LIMEPYdata_500_LIMEPYmodel_2020-07-21.rds")
 plot(as.mcmc(newrun$chain))
@@ -203,11 +181,48 @@ saveRDS(object = finalrun, file = paste("../results/chain_LIMEPYdata_500_LIMEPYm
 ```{r}
 finalrun <- readRDS(file = "../results/chain_LIMEPYdata_500_LIMEPYmodel_2020-07-21.rds")
 plot(finalrun$chain)
+
+summary(finalrun$chain)
+
+effectiveSize(finalrun$chain)
 ```
 
-### Plotting the posterior distribution
+The chain could stand to run for longer to obtain more approximately independent samples. 
+
+## Plotting the posterior distribution
+```{r}
+df <- as.data.frame(finalrun$chain)
+library(ggplot2)
+library(GGally)
+GGally::ggpairs(df, aes(alpha  =0.25))
+
+```
 
 
+# Using GCmcmc - LIMEPY data, SPES model
+
+```{r}
+source("../RScripts/function_logLike_SPES.r")
+source('../RScripts/function_prior-wrapper.r')
+source("../RScripts/function_priors.r")
+optimvalsSPES <- readRDS('../results/optim_LIMEPYdata_SPESmodel.rds')
+
+initparsSPES <- optimvalsSPES$par
+
+# hyperprior values
+phi0bounds = c(1.5, 14) # assuming truncated uniform prior
+Bbounds = c(0, 1) # assuming truncated uniform prior
+etabounds = c(0, 1) # assuming truncated uniform prior
+log10Mpars = c( 5.85, 0.6 ) # for Mpars, gaussian on log10(M)
+rhpars = c(0, 30, 3.4, 0.2) # lower bound, upper bound, mean, sd 
+
+```
 
 
+```{r}
 
+
+runinitSPES <- GCmcmc(init = initparsSPES, mydat = mydata, logLike = logLike.spes, N=250, transform.pars = notransform.func, priors = prior.wrapper, priorfuncs = list( singleunif.prior, singleunif.prior, singleunif.prior, normlog10M.prior, truncnorm.prior ), ppars = list( phi0bounds, Bbounds, etabounds, log10Mpars, rhpars ), propDF = mypropDF, covmat = SPEScovariancematrix, n.pars=5, parnames = c("Phi_0", "B", "eta", "M", "r_h"), progressBar = FALSE )
+
+plot(runinitSPES$chain)
+```
