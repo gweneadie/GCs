@@ -29,6 +29,14 @@ saveRDS(allrphirho, file = paste0("../results/profiles_", Sys.Date(), ".rds") )
 # read in data frame
 allrphirho <- readRDS("../results/profiles_2020-07-29.rds")
 
+# read in actual data 
+alldata <- readRDS("../mockdata/snap_version2_dffix_2020-03-09.rds")
+
+# also get true parameter values and true mass profile, etc
+# true mass profile from true parameters
+truepars <- c(1.4, 5.,125892.,3.)
+truemodel <- limepy$limepy(g=truepars[1], phi0=truepars[2], M=truepars[3], rh=truepars[4])
+
 # I want the max r, min phi, and max rho for plotting purposes, and that's what these lines give me
 library(dplyr)
 bigdataframe <- bind_rows(allrphirho, .id = "column_label")
@@ -52,17 +60,16 @@ dev.off()
 ![Figure 1: Estimated potential profile](../results/Figures/potential_profile_2020-07-29.png)
 
 We can do the similar thing for the density profile of the GC.
-```{r, eval=FALSE}
+```{r, eval=FALSE, echo=FALSE}
 png(filename = paste0("../results/Figures/density_profile_", Sys.Date(), ".png"), width=1000, height=800)
 
-par(mar=c(5,6,2,2))
-plot(allrphirho[[1]]$r, allrphirho[[1]]$rho, type="l", xlab="r (pc)", ylab=expression(rho), cex.lab=2.5, cex.axis=2.5, xlim = c(0,maxr), ylim=c(0,maxrho))
+par(mar=c(5,6,4,2))
+plot(allrphirho[[1]]$r, allrphirho[[1]]$rho, type="l", xlab="r (pc)", ylab=expression(rho), cex.lab=2.5, cex.axis=2.5, xlim = c(1e-1,maxr), ylim=c(1,maxrho), log="xy")
 grid()
 lapply(X = allrphirho, FUN = function(X) lines(X$r, X$rho, col=rgb(0,0,0,0.01)) )
 
 dev.off()
 ```
-
 ![Figure 2: Estimated density profile](../results/Figures/density_profile_2020-07-29.png)
 
 
@@ -95,10 +102,13 @@ for(i in 2:length(exmodel$r)){
   exmodel$mass[i] <- integrate(f = testspline, lower = exmodel$r[1], upper = exmodel$r[i], subdivisions = 100)$value
 }
 ```
-Now we can plot the mass profile:
+Now we can plot the mass profile with a line, and compare it to the mass contained within specific radii returned by limepy
 ```{r}
 par(mar=c(5,6,2,2))
 plot(exmodel$r, exmodel$mass, xlab="r (pc)", ylab = expression(M(r<R)~(M['\u0298'])), cex.lab=1.5, cex.lab=1.5, type="l")
+points(exmodel$r, exmodel$mc)
+
+legend("bottomright", pch=)
 ```
 
 Next, we will do this for _every_ set of parameters in the Markov chain! (It took maybe 30 minutes for this to run, so not run here). We will also calculate the median of the total mass parameter from the posterior samples and include this as a horizontal line on the figure.
@@ -108,6 +118,10 @@ allmassprofiles <- apply(X = target$chain, MARGIN = 1, FUN = massprofile)
 
 # save because that took a while!
 saveRDS(allmassprofiles, file = paste0("../results/massprofiles_", Sys.Date()))
+```
+```{r, echo=FALSE}
+# load the above
+allmassprofiles <- readRDS("../results/massprofiles_2020-07-29")
 
 # max M for plotting
 bigmassdataframe <- bind_rows(allmassprofiles, .id = "column_label")
@@ -123,6 +137,10 @@ lapply(X = allmassprofiles, FUN = function(X) lines(X$r, X$mass, col=rgb(0,0,0,0
 
 abline(h=median(target$chain[,3]), col="blue", lty=2)
 
+abline(h=truepars[3], col="darkgreen", lty=3, lwd=3)
+lines(truemodel$r, truemodel$mc, col="red", lwd=2)
+
+legend("bottomright", lty=c(1,1,2,2), lwd=c(1, 1.5, 2,3), legend = c("posterior profiles", "true profile", "median mass estimate", "true total mass"), col=c("black", "red", "blue", "darkgreen"))
 dev.off()
 
 ```
