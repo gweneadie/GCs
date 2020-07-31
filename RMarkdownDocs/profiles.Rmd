@@ -34,7 +34,7 @@ alldata <- readRDS("../mockdata/snap_version2_dffix_2020-03-09.rds")
 
 # also get true parameter values and true mass profile, etc
 # true mass profile from true parameters
-truepars <- c(1.4, 5.,125892.,3.)
+truepars <- c(1.4, 5.,125892.,3.1)
 truemodel <- limepy$limepy(g=truepars[1], phi0=truepars[2], M=truepars[3], rh=truepars[4])
 
 # I want the max r, min phi, and max rho for plotting purposes, and that's what these lines give me
@@ -43,6 +43,7 @@ bigdataframe <- bind_rows(allrphirho, .id = "column_label")
 maxr <- max(bigdataframe$r)
 minphi <- min(bigdataframe$phi)
 maxrho <- max(bigdataframe$rho)
+
 ```
 
 Next, we show the potential $\Phi$ as a function of distance $r$ from the centre of the cluster, given the posterior distribution samples. In the figure below, each line shows the $\Phi(r)$ given the one set of model parameters in our sample from the target distribution. The lines are plotted with semi transparency so the density of lines is more visible. 
@@ -53,6 +54,7 @@ plot(allrphirho[[1]]$r, allrphirho[[1]]$phi, type="l", xlab="r (pc)", ylab=expre
 grid()
 lapply(X = allrphirho, FUN = function(X) lines(X$r, X$phi, col=rgb(0,0,0,0.01)) )
 
+lines(truemodel$r, -truemodel$phi, col="red", lwd=2)
 dev.off()
 
 ```
@@ -68,6 +70,7 @@ plot(allrphirho[[1]]$r, allrphirho[[1]]$rho, type="l", xlab="r (pc)", ylab=expre
 grid()
 lapply(X = allrphirho, FUN = function(X) lines(X$r, X$rho, col=rgb(0,0,0,0.01)) )
 
+lines(truemodel$r, truemodel$rho, col="red", lwd=2)
 dev.off()
 ```
 ![Figure 2: Estimated density profile](../results/Figures/density_profile_2020-07-29.png)
