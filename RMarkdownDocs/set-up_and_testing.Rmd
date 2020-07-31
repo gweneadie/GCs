@@ -2,7 +2,9 @@
 title: "Checking functions for GC Project"
 author: "Gwen Eadie"
 date: "15/07/2020"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 
