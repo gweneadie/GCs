@@ -105,7 +105,7 @@ Let's check the make sure these are working as expected. First, let's define the
 gbounds = c(1e-3, 3.5) # bounds for uniform prior on g
 phi0bounds = c(1.5, 14) # bounds for uniform prior on phi_0
 log10Mpars = c( 5.85, 0.6 ) # mean and standard deviation for log10(M)
-rhpars = c(0, 30, 3.4, 0.2) # lower bound, upper bound, mean, sd for r_h
+rhpars = c(0, 30, 3.0, 0.2) # lower bound, upper bound, mean, sd for r_h
 
 ```
 
@@ -201,6 +201,7 @@ LIMEPYdf = limepy$limepy(g = testpars[1], phi0 = testpars[2], M=testpars[3], rh=
 
 # now try using this model with the mock data to calculate the DF at the data points
 LIMEPYdf$df( smalldata$r, smalldata$v )
+
 ```
 
 This looks like it is working OK. What if I pass it bad parameter values?
@@ -216,6 +217,7 @@ badLIMEPYdf$df( smalldata$r, smalldata$v )
 We receive an error from the Python code. Will come back to this in a minute. In the meantime, let's go back to the model that had reasonable $\mathbf{\theta}$ values and calculate the likelihood at the data points. The likelihood is the DF divided by the total mass M, so this would give us
 ```{r}
 LIMEPYdf$df( smalldata$r, smalldata$v )/testpars[3]
+
 ```
 
 and a log-likelihood value of 
@@ -263,6 +265,7 @@ targetdensity <- function(init, mydat, logLike, priors=prior.wrapper, ... ){
 test = optim(par = testpars, fn = targetdensity, mydat = mydata, logLike = logLike.limepy, priorfuncs = list(singleunif.prior, singleunif.prior, normlog10M.prior, truncnorm.prior), ppars = list( gbounds, phi0bounds, log10Mpars, rhpars), control=list(fnscale=-1) )
 
 print(test)
+
 ```
 
 It's a good idea to run optim again from these final parameter values, to double check the result
@@ -271,7 +274,8 @@ test2 = optim(par = test$par, fn = targetdensity, mydat = mydata, logLike = logL
 
 print(test2)
 
-saveRDS(test2, file = "../results/optim_LIMEPYdata_LIMEPYmodel.rds")
+saveRDS(test2, file = paste0("../results/optim_LIMEPYdata_LIMEPYmodel", Sys.Date(), ".rds"))
+
 ```
 
 It looks OK, the results barely changed and I think the parameter estimates look reasonable? 
@@ -289,7 +293,8 @@ pargrid = expand.grid(g = gseq, phi0 = phi0seq, M = Mseq, rh = rhseq)
 
 targetvalues <- apply(X = pargrid, FUN = targetdensity, MARGIN = 1, mydat = mydata, logLike = logLike.limepy, priorfuncs = list(singleunif.prior, singleunif.prior, normlog10M.prior, truncnorm.prior), ppars = list( gbounds, phi0bounds, log10Mpars, rhpars))
 
-saveRDS(targetvalues, file = paste("../results/gridsearch_", Sys.Date(), sep="") )
+saveRDS(targetvalues, file = paste0("../results/gridsearch_", Sys.Date(), ".rds") )
+
 ```
 
 I will load the results here and show the surface of the log-target density values in a conditional plot that focuses on the $M$ and $r_h$ grid. 
@@ -308,7 +313,13 @@ pargrid = expand.grid(g = gseq, phi0 = phi0seq, M = Mseq, rh = rhseq)
 
 # the grid search is computationally expensive and done prior to this.
 # Load the resulting target density from the grid search
-target <- readRDS("../results/gridsearch_2020-07-08")
+
+# gridsearch using r_h prior centered on 3.4
+# target <- readRDS("../results/gridsearch_2020-07-08")
+
+# gridsearch using r_h prior centered on 3.0
+ target <- readRDS("../results/gridsearch_2020-08-02.rds")
+
 # add the the dataframe
 pargrid$target = target
 
