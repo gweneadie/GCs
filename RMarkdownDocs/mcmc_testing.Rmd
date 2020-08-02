@@ -23,6 +23,7 @@ alldata = readRDS("../mockdata/snap_version2_dffix_2020-03-09.rds")
 nsamp = 500
 set.seed(123)
 mydata = alldata[sample(x = 1:nrow(alldata), size = nsamp, replace = FALSE), ]
+
 ```
 
 Below are the data in $(r,v)$ space; the grey (transparent) points are all of the data, and the blue are the random subsample.
@@ -53,6 +54,7 @@ The function _GCmcmc()_ is used to generate a Markov chain that represents the t
 The function is stored in the following script, sourced and shown here:
 ```{r}
 source("../RScripts/function_GCmcmc.r")
+
 ```
 
 We use a multivariate normal for the proposal distribution. The function passed to propDF argument in GCmcmc is the following
@@ -79,6 +81,7 @@ SPEScovariancematrix =  matrix(c(0.001, 0, 0, 0, 0,
                             0, 0, 0, 0, 0.0002), nrow=5)
 
 mypropDF(n.pars = 5, covmat = SPEScovariancematrix)
+
 ```
 
 We are not transforming the parameter values into a different space for sampling, but we still need to pass a function to the transform.pars argument in GCmcmc, so we create a transform function that actually doesn't transform the parameters at all. Let's take a look and test it.
@@ -94,6 +97,7 @@ testpars = c(0.3,5,-10, 93.7)
 notransform.func(x = testpars)
 
 rm(testpars)
+
 ```
 
 The is.whole function is needed for the thinning parameter to work. 
@@ -110,6 +114,7 @@ is.whole(-Inf)
 is.whole(NA)
 
 is.whole("hello")
+
 ```
 
 ## Using GCmcmc - LIMEPY data, LIMEPY model
@@ -122,8 +127,14 @@ initpars <- readRDS("../results/optim_LIMEPYdata_LIMEPYmodel.rds")
 
 Now we are ready to run GCmcmc(). (Not run here because it takes a couple minutes).
 ```{r, echo=FALSE, eval=FALSE}
+# set prior bounds
+gbounds = c(1e-3, 3.5) # bounds for uniform prior on g
+phi0bounds = c(1.5, 14) # bounds for uniform prior on phi_0
+log10Mpars = c( 5.85, 0.6 ) # mean and standard deviation for log10(M)
+rhpars = c(0, 30, 3.0, 0.2) # lower bound, upper bound, mean, sd for r_h
+
 # let's just run it for 250 steps as a demo
-runinit = GCmcmc(init = initpars, mydat = mydata, logLike = logLike.limepy, priors = prior.wrapper, N = 500, 
+runinit = GCmcmc(init = initpars$par, mydat = mydata, logLike = logLike.limepy, priors = prior.wrapper, N = 500, 
                  transform.pars = notransform.func, 
                  priorfuncs = list( singleunif.prior, singleunif.prior, normlog10M.prior, truncnorm.prior ),
                  ppars = list( gbounds, phi0bounds, log10Mpars, rhpars ),
