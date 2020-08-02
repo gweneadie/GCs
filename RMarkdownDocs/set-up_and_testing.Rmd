@@ -196,6 +196,10 @@ smalldata = alldata[sample(x = 1:nrow(alldata), size = nsamp, replace = FALSE), 
 # what does the data frame look like?
 str(smalldata)
 
+
+# these are the true parameter values that were used to create simulated data
+truepars <- c(1.4, 5.,125892.,3.1)
+
 # numerically obtain the LIMEPY DF given by the test parameter values defined earlier
 LIMEPYdf = limepy$limepy(g = testpars[1], phi0 = testpars[2], M=testpars[3], rh=testpars[4])
 
@@ -315,10 +319,10 @@ pargrid = expand.grid(g = gseq, phi0 = phi0seq, M = Mseq, rh = rhseq)
 # Load the resulting target density from the grid search
 
 # gridsearch using r_h prior centered on 3.4
-# target <- readRDS("../results/gridsearch_2020-07-08")
+target <- readRDS("../results/gridsearch_2020-07-08")
 
 # gridsearch using r_h prior centered on 3.0
- target <- readRDS("../results/gridsearch_2020-08-02.rds")
+target <- readRDS("../results/gridsearch_2020-08-02.rds")
 
 # add the the dataframe
 pargrid$target = target
@@ -326,19 +330,30 @@ pargrid$target = target
 # replace -Inf with NAs for plotting purposes
 pargrid$target <- na_if(x = pargrid$target, y = -Inf)
 
+# add a row to the end of the dataframe with the true values
+pargrid2 <- add_row(.data = pargrid, g=truepars[1], phi0=truepars[2], M=truepars[3], rh=truepars[4])
 
 # for plotting as a conditional plot, place target values into 5 bins in g and 5 bins in phi0
-conditional = mutate(pargrid, gbin = ggplot2::cut_interval(x = pargrid$g, n = 5) ) %>% 
-  mutate(phi0bin = ggplot2::cut_interval(x = pargrid$phi0, n=5)) %>%
-    group_by(M, rh, gbin, phi0bin) %>% # then group by these bins, M, and r_h
+conditional = mutate(pargrid2, gbin = ggplot2::cut_interval(x = pargrid2$g, n = 5) ) %>% 
+  mutate(phi0bin = ggplot2::cut_interval(x = pargrid2$phi0, n=5)) 
+
+trueval <- conditional[nrow(conditional), ]
+
+conditional <- conditional[-nrow(conditional), ] %>%
+  group_by(M, rh, gbin, phi0bin) %>% # then group by these bins, M, and r_h
       summarize(target = mean(target, na.rm = TRUE)) # and for every M and r_h, take the mean log target for every g and phi_0 combination
 
 # make the base plot
-g <- ggplot(conditional, aes(x=rh, y=M, fill=target)) + 
+g <- ggplot(data = conditional, aes(x=rh, y=M, fill=target)) + 
   geom_raster()
 
 # make a conditional plot by binning the results 
-g + facet_grid( gbin ~ phi0bin ) + labs(title="Total Mass vs half-light radius", caption = "LIMEPY data, LIMPEY model", subtitle="log target density within each g (row) and phi0 (column) bin") + theme_bw() + theme(strip.text = element_text(size = 14), text = element_text(size=14), panel.grid.major = element_blank(), panel.grid.minor = element_blank()) 
+g +
+  facet_grid( gbin ~ phi0bin ) +
+  labs(title="Total Mass vs half-light radius", caption = "LIMEPY data, LIMPEY model", subtitle="log target density within each g (row) and phi0 (column) bin") +
+  theme_bw() + theme(strip.text = element_text(size = 14), text = element_text(size=14), panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  geom_point(data = trueval, color="red", shape="*", size=15)
+  
 
 ```
 
