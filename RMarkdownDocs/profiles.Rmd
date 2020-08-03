@@ -10,24 +10,33 @@ output: html_document
 First load the samples from the target distribution and the function to grab the potential and r values provided by limepy for each set of parameter values in the Markov chain.
 ```{r}
 # load results
-target <- readRDS("../results/chain_LIMEPYdata_500_LIMEPYmodel_2020-07-21.rds")
+# these are the results from using r_h prior centered on 3.4
+target34 <- readRDS("../results/chain_LIMEPYdata_500_LIMEPYmodel_2020-07-21.rds")
+
+# these are the results from using r_h prior centered on 3.0
+target <- readRDS("../results/chain_LIMEPYdata_500_LIMEPYmodel_2020-08-02.rds")
 
 # source profile code
 source("../RScripts/function_profiles.r")
 
 # this is what the function does
 profiles
+
 ```
 
 ```{r, eval=FALSE}
 # find r and phi for every set of parameter values
 allrphirho <- apply(X = target$chain, MARGIN = 1, FUN = profiles)
 saveRDS(allrphirho, file = paste0("../results/profiles_", Sys.Date(), ".rds") )
+
 ```
 
 ```{r, echo=FALSE}
-# read in data frame
-allrphirho <- readRDS("../results/profiles_2020-07-29.rds")
+# read in data frame (r_h prior centered 3.4)
+allrphirho34 <- readRDS("../results/profiles_2020-07-29.rds")
+
+# (r_h prior centered 3.0)
+allrphirho <- readRDS("../results/profiles_2020-08-02.rds")
 
 # read in actual data 
 alldata <- readRDS("../mockdata/snap_version2_dffix_2020-03-09.rds")
@@ -73,7 +82,7 @@ lapply(X = allrphirho, FUN = function(X) lines(X$r, X$rho, col=rgb(0,0,0,0.01)) 
 lines(truemodel$r, truemodel$rho, col="red", lwd=2)
 dev.off()
 ```
-![Figure 2: Estimated density profile](../results/Figures/density_profile_2020-07-29.png)
+![Figure 2: Estimated density profile](../results/Figures/density_profile_2020-08-02.png)
 
 
 OK, now I will try calculating the mass profile. Physically the mass contained within some distance $r$ of the cluster can be found by integrating the mass density $\rho (r)$ and assuming spherical symmetry
@@ -87,6 +96,7 @@ testpars
 exmodel <- limepy$limepy(g = testpars[1], phi0 = testpars[2], M = testpars[3], rh = testpars[4])
 # plot the mass density profile
 plot(exmodel$r, exmodel$rho*exmodel$r^2, xlab="r (pc)", ylab=expression(rho(r)))
+
 ```
 This doesn't look too terrible, but we also don't want to integrate with so few points. It is a smooth function, so we will fit a spline to this function and then numerically integrate that spline. As an example, here is how well a spline fit to the points above can represent this function of $\rho (r) r^2$:
 ```{r}
@@ -104,6 +114,7 @@ exmodel$mass <- 0
 for(i in 2:length(exmodel$r)){
   exmodel$mass[i] <- integrate(f = testspline, lower = exmodel$r[1], upper = exmodel$r[i], subdivisions = 100)$value
 }
+
 ```
 Now we can plot the mass profile with a line, and compare it to the mass contained within specific radii returned by limepy
 ```{r}
@@ -111,7 +122,6 @@ par(mar=c(5,6,2,2))
 plot(exmodel$r, exmodel$mass, xlab="r (pc)", ylab = expression(M(r<R)~(M['\u0298'])), cex.lab=1.5, cex.lab=1.5, type="l")
 points(exmodel$r, exmodel$mc)
 
-legend("bottomright", pch=)
 ```
 
 Next, we will do this for _every_ set of parameters in the Markov chain! (It took maybe 30 minutes for this to run, so not run here). We will also calculate the median of the total mass parameter from the posterior samples and include this as a horizontal line on the figure.
@@ -120,11 +130,16 @@ Next, we will do this for _every_ set of parameters in the Markov chain! (It too
 allmassprofiles <- apply(X = target$chain, MARGIN = 1, FUN = massprofile)
 
 # save because that took a while!
-saveRDS(allmassprofiles, file = paste0("../results/massprofiles_", Sys.Date()))
+saveRDS(allmassprofiles, file = paste0("../results/massprofiles_", Sys.Date(), ".rds"))
+
 ```
 ```{r, echo=FALSE}
-# load the above
-allmassprofiles <- readRDS("../results/massprofiles_2020-07-29")
+# load the above (r_h prior centered on 3.4)
+allmassprofiles34 <- readRDS("../results/massprofiles_2020-07-29")
+
+# (r_h prior centered on 3.0)
+allmassprofiles <- readRDS("../results/massprofiles_2020-08-02.rds")
+
 
 # max M for plotting
 bigmassdataframe <- bind_rows(allmassprofiles, .id = "column_label")
