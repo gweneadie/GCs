@@ -146,12 +146,19 @@ str(runinit)
 
 # save to file
 saveRDS(object = runinit, file = paste0("../results/initrun_LIMEPYdata_500_LIMEPYmodel_", Sys.Date(), ".rds"))
+
 ```
 
 ```{r}
+# this is the run with r_h prior centered on 3.4
 runinit <- readRDS("../results/initrun_LIMEPYdata_500_LIMEPYmodel_2020-07-21.rds")
+
+# this is the run with r_h prior centered on 3.0
+runinit <- readRDS("../results/initrun_LIMEPYdata_500_LIMEPYmodel_2020-08-02.rds")
+
 # plot the preliminary results to check that things look OK
 plot(runinit$chain)
+
 ```
 
 Things seem to be working OK!
@@ -171,12 +178,19 @@ newrun$newpropsd
 
 # save output to a file
 saveRDS(newrun, file = paste("../results/burnin_LIMEPYdata_500_LIMEPYmodel_", Sys.Date(), ".rds", sep="") )
+
 ```
 
 Do the chains look like they are mixing better as the proposal distribution is updated every 500 steps?
 ```{r}
-newrun <- readRDS(file = "../results/burnin_LIMEPYdata_500_LIMEPYmodel_2020-07-21.rds")
+# this is the case where prior on r_h is centered on 3.4
+newrun34 <- readRDS(file = "../results/burnin_LIMEPYdata_500_LIMEPYmodel_2020-07-21.rds")
+
+# this is the case where prior on r_h is centered on 3.0
+newrun <- readRDS(file = "../results/burnin_LIMEPYdata_500_LIMEPYmodel_2020-08-02.rds")
+
 plot(as.mcmc(newrun$chain))
+
 ```
 
 The chains appear to be sampling more efficiently, and the mixing looks decent. Let's now use the proposal distribution we've settled on to sample the target distribution. (Not run here because it takes about 5 minutes)
@@ -187,12 +201,15 @@ finalrun <- GCmcmc(init = newrun$newinitpars, mydat = mydata, logLike = logLike.
 
 # save chain to file
 saveRDS(object = finalrun, file = paste("../results/chain_LIMEPYdata_500_LIMEPYmodel_", Sys.Date(), ".rds", sep="") )
+
 ```
 
 ```{r}
-finalrun <- readRDS(file = "../results/chain_LIMEPYdata_500_LIMEPYmodel_2020-07-21.rds")
+# this is the run with prior on r_h centered on 3.4
+finalrun34 <- readRDS(file = "../results/chain_LIMEPYdata_500_LIMEPYmodel_2020-07-21.rds")
 plot(finalrun$chain)
 
+finalrun <- readRDS(file = "../results/chain_LIMEPYdata_500_LIMEPYmodel_2020-08-02.rds")
 summary(finalrun$chain)
 
 effectiveSize(finalrun$chain)
@@ -201,11 +218,11 @@ effectiveSize(finalrun$chain)
 The chain could stand to run for longer to obtain more approximately independent samples. 
 
 ## Plotting the posterior distribution
-```{r}
+```{r, echo=FALSE}
 df <- as.data.frame(finalrun$chain)
 library(ggplot2)
 library(GGally)
-GGally::ggpairs(df, aes(alpha  =0.25))
+GGally::ggpairs(df, aes(alpha  =0.1))
 
 ```
 
