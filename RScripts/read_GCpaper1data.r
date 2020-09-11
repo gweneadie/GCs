@@ -1,4 +1,4 @@
-filename = "m5r1g1.5phi5.0"
+filename = "m5r9g1.5phi5.0"
 
 GCstars <- read.table(paste0("../mockdata/paper1data/", filename, ".dat"), col.names = c("x", "y", "z", "vx", "vy", "vz"))
 
