@@ -17,9 +17,9 @@ source("function_logtargetdensity.r")
 ############## Optim run to get starting parameters
 # some test parameters for g, phi0, M, and rh
 gtest = 1.5
-phi0test = 6.1
-Mtest = 1.2e5
-rhtest = 2.1
+phi0test = 5.0
+Mtest = 1e5
+rhtest = 8.0
 testpars <- c(gtest, phi0test, Mtest, rhtest)
 
 test <- optim(par = testpars, fn = targetdensity, mydat = mydata, logLike = logLike.limepy, priorfuncs = list(singleunif.prior, singleunif.prior, normlog10M.prior, truncnorm.prior), ppars = list( gbounds, phi0bounds, log10Mpars, rhpars), control=list(fnscale=-1) )
