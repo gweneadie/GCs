@@ -18,7 +18,9 @@ source("../RScripts/function_priors.r")
 source("../RScripts/function_prior-wrapper.r")
 
 # load the simulated data for testing
-alldata = readRDS("../mockdata/snap_version2_dffix_2020-03-09.rds")
+# alldata = readRDS("../mockdata/snap_version2_dffix_2020-03-09.rds")
+alldata <- readRDS("../mockdata/snap_g14phi05M125892rh3_2020-08-04.rds")
+
 # get a random sample of the stars
 nsamp = 500
 set.seed(123)
@@ -121,7 +123,7 @@ is.whole("hello")
 
 We will use the optim() values as our initial starting values for running GCmcmc. 
 ```{r}
-initpars <- readRDS("../results/optim_LIMEPYdata_LIMEPYmodel.rds")
+initpars <- readRDS("../results/optim_LIMEPYdata_LIMEPYmodel2020-08-04.rds")
 
 ```
 
@@ -154,7 +156,7 @@ saveRDS(object = runinit, file = paste0("../results/initrun_LIMEPYdata_500_LIMEP
 runinit <- readRDS("../results/initrun_LIMEPYdata_500_LIMEPYmodel_2020-07-21.rds")
 
 # this is the run with r_h prior centered on 3.0
-runinit <- readRDS("../results/initrun_LIMEPYdata_500_LIMEPYmodel_2020-08-02.rds")
+runinit <- readRDS("../results/initrun_LIMEPYdata_500_LIMEPYmodel_2020-08-04.rds")
 
 # plot the preliminary results to check that things look OK
 plot(runinit$chain)
@@ -187,9 +189,11 @@ Do the chains look like they are mixing better as the proposal distribution is u
 newrun34 <- readRDS(file = "../results/burnin_LIMEPYdata_500_LIMEPYmodel_2020-07-21.rds")
 
 # this is the case where prior on r_h is centered on 3.0
-newrun <- readRDS(file = "../results/burnin_LIMEPYdata_500_LIMEPYmodel_2020-08-02.rds")
+newrun <- readRDS(file = "../results/burnin_LIMEPYdata_500_LIMEPYmodel_2020-08-04.rds")
 
-plot(as.mcmc(newrun$chain))
+png("../results/Figures/adaptive_tuning_example.png", height=900, width=900)
+plot(as.mcmc(newrun$chain), lwd=1.5, cex.main=2.5)
+dev.off()
 
 ```
 
@@ -206,10 +210,9 @@ saveRDS(object = finalrun, file = paste("../results/chain_LIMEPYdata_500_LIMEPYm
 
 ```{r}
 # this is the run with prior on r_h centered on 3.4
-finalrun34 <- readRDS(file = "../results/chain_LIMEPYdata_500_LIMEPYmodel_2020-07-21.rds")
-plot(finalrun$chain)
+#finalrun34 <- readRDS("../results/chain_LIMEPYdata_500_LIMEPYmodel_2020-07-21.rds")
 
-finalrun <- readRDS(file = "../results/chain_LIMEPYdata_500_LIMEPYmodel_2020-08-02.rds")
+finalrun <- readRDS("../results/chain_LIMEPYdata_500_LIMEPYmodel_2020-08-04.rds")
 summary(finalrun$chain)
 
 effectiveSize(finalrun$chain)
@@ -218,18 +221,25 @@ effectiveSize(finalrun$chain)
 The chain could stand to run for longer to obtain more approximately independent samples. 
 
 ## Plotting the posterior distribution
-```{r, echo=FALSE}
+```{r, echo=FALSE, results=FALSE}
 df <- as.data.frame(finalrun$chain)
 library(ggplot2)
 library(GGally)
+
+# true model parameters
+truepars <- c(1.4, 5.,125892.,3.)
+
+
+png(paste0("../results/Figures/posterior_distribution_", Sys.Date(), ".png"), height=1000, width=800)
 GGally::ggpairs(df, aes(alpha  =0.1))
 
+dev.off()
 ```
 
 
 # Using GCmcmc - LIMEPY data, SPES model
 
-```{r}
+```{r, eval=FALSE}
 source("../RScripts/function_logLike_SPES.r")
 source('../RScripts/function_prior-wrapper.r')
 source("../RScripts/function_priors.r")
@@ -247,7 +257,7 @@ rhpars = c(0, 30, 3.4, 0.2) # lower bound, upper bound, mean, sd
 ```
 
 
-```{r}
+```{r, eval=FALSE}
 
 
 runinitSPES <- GCmcmc(init = initparsSPES, mydat = mydata, logLike = logLike.spes, N=250, transform.pars = notransform.func, priors = prior.wrapper, priorfuncs = list( singleunif.prior, singleunif.prior, singleunif.prior, normlog10M.prior, truncnorm.prior ), ppars = list( phi0bounds, Bbounds, etabounds, log10Mpars, rhpars ), propDF = mypropDF, covmat = SPEScovariancematrix, n.pars=5, parnames = c("Phi_0", "B", "eta", "M", "r_h"), progressBar = FALSE )
