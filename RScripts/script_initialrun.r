@@ -16,25 +16,30 @@ source("function_logtargetdensity.r")
 
 ############## Optim run to get starting parameters
 # some test parameters for g, phi0, M, and rh
-gtest = 1.5
-phi0test = 5.0
+gtest = 1.4
+phi0test = 5.1
 Mtest = 1e5
-rhtest = 8.0
+rhtest = 3.1
 testpars <- c(gtest, phi0test, Mtest, rhtest)
 
-test <- optim(par = testpars, fn = targetdensity, mydat = mydata, logLike = logLike.limepy, priorfuncs = list(singleunif.prior, singleunif.prior, normlog10M.prior, truncnorm.prior), ppars = list( gbounds, phi0bounds, log10Mpars, rhpars), control=list(fnscale=-1) )
+test <- optim(par = testpars, fn = targetdensity, mydat = mydata, logLike = logLike.limepy, priorfuncs = list(singleunif.prior, singleunif.prior, normlog10M.prior, truncnorm.prior), ppars = list( gbounds, phi0bounds, log10Mpars, rhpars), control=list(fnscale=-1, maxit=2e3, reltol=1e-10) )
 
 print(test)
 
-test2 <- optim(par = test$par, fn = targetdensity, mydat = mydata, logLike = logLike.limepy, priorfuncs = list(singleunif.prior, singleunif.prior, normlog10M.prior, truncnorm.prior), ppars = list( gbounds, phi0bounds, log10Mpars, rhpars), control=list(fnscale=-1) )
+# run optim 5 times to be sure
+for( j in 1:3){
+  test <- optim(par = test$par, fn = targetdensity, mydat = mydata, logLike = logLike.limepy, priorfuncs = list(singleunif.prior, singleunif.prior, normlog10M.prior, truncnorm.prior), ppars = list( gbounds, phi0bounds, log10Mpars, rhpars), control=list(fnscale=-1), maxit=2e3, reltol=1e-11 )
+  
+  print(test)
+  
+}
 
-print(test2)
 
 # save optim results to a file
-saveRDS(test2, file = paste0("../results/optim_LIMEPYdata_LIMEPYmodel", filename, Sys.Date(), ".rds"))
+saveRDS(test, file = paste0("../results/optim_LIMEPYdata_LIMEPYmodel_", filename, "_", Sys.Date(), ".rds"))
 
 # use optim pars as initial parameters for first mcmc run
-initpars <- test2$par
+initpars <- test$par
 
 ############## Initial mcmc run
 runinit = GCmcmc(init = initpars, mydat = mydata, logLike = logLike.limepy, priors = prior.wrapper, N = 500, 

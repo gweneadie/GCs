@@ -1,7 +1,7 @@
 ################# Set-up script for analysis
 
 # filename of mockdata
-filename <- "m5r9g1.5phi5.0"
+filename <- "m5r3g1.5phi5.0"
 # sample data set
 nsamp = 500
 
@@ -16,7 +16,7 @@ mydata = alldata[sample(x = 1:nrow(alldata), size = nsamp, replace = FALSE), ]
 gbounds = c(1e-3, 3.5) # bounds for uniform prior on g
 phi0bounds = c(1.5, 14) # bounds for uniform prior on phi_0
 log10Mpars = c( 5.85, 0.6 ) # mean and standard deviation for log10(M)
-rhpars = c(0, 30, 9.0, 0.4) # lower bound, upper bound, mean, sd for r_h
+rhpars = c(0, 30, 3.0, 0.4) # lower bound, upper bound, mean, sd for r_h
 
 
 # make an initial covariance matrix for LIMEPY, which has 4 model parameters
