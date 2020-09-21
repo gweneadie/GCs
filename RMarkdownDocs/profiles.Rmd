@@ -14,7 +14,7 @@ First load the samples from the target distribution and the function to grab the
 target34 <- readRDS("../results/chain_LIMEPYdata_500_LIMEPYmodel_2020-07-21.rds")
 
 # these are the results from using r_h prior centered on 3.0
-target <- readRDS("../results/chain_LIMEPYdata_500_LIMEPYmodel_2020-08-02.rds")
+target <- readRDS("../results/chain_LIMEPYdata_500_LIMEPYmodel_2020-08-04.rds")
 
 # source profile code
 source("../RScripts/function_profiles.r")
@@ -36,14 +36,14 @@ saveRDS(allrphirho, file = paste0("../results/profiles_", Sys.Date(), ".rds") )
 allrphirho34 <- readRDS("../results/profiles_2020-07-29.rds")
 
 # (r_h prior centered 3.0)
-allrphirho <- readRDS("../results/profiles_2020-08-02.rds")
+allrphirho <- readRDS("../results/profiles_2020-08-04.rds")
 
 # read in actual data 
-alldata <- readRDS("../mockdata/snap_version2_dffix_2020-03-09.rds")
+alldata <- readRDS("../mockdata/snap_g14phi05M125892rh3_2020-08-04.rds")
 
 # also get true parameter values and true mass profile, etc
 # true mass profile from true parameters
-truepars <- c(1.4, 5.,125892.,3.1)
+truepars <- c(1.4, 5.,125892.,3)
 truemodel <- limepy$limepy(g=truepars[1], phi0=truepars[2], M=truepars[3], rh=truepars[4])
 
 # I want the max r, min phi, and max rho for plotting purposes, and that's what these lines give me
@@ -56,7 +56,7 @@ maxrho <- max(bigdataframe$rho)
 ```
 
 Next, we show the potential $\Phi$ as a function of distance $r$ from the centre of the cluster, given the posterior distribution samples. In the figure below, each line shows the $\Phi(r)$ given the one set of model parameters in our sample from the target distribution. The lines are plotted with semi transparency so the density of lines is more visible. 
-```{r, eval=FALSE}
+```{r, eval=FALSE, echo=FALSE, results=FALSE}
 png(filename = paste0("../results/Figures/potential_profile_", Sys.Date(), ".png"), width = 1000, height = 800)
 par(mar=c(5,6,2,2))
 plot(allrphirho[[1]]$r, allrphirho[[1]]$phi, type="l", xlab="r (pc)", ylab=expression(Phi(r)), cex.lab=2.5, cex.axis=2.5, xlim=c(0, maxr), ylim=c(minphi, 0))
@@ -68,10 +68,10 @@ dev.off()
 
 ```
 
-![Figure 1: Estimated potential profile](../results/Figures/potential_profile_2020-07-29.png)
+![Figure 1: Estimated potential profile](../results/Figures/potential_profile_2020-08-04.png)
 
 We can do the similar thing for the density profile of the GC.
-```{r, eval=FALSE, echo=FALSE}
+```{r, eval=FALSE, echo=FALSE, results=FALSE}
 png(filename = paste0("../results/Figures/density_profile_", Sys.Date(), ".png"), width=1000, height=800)
 
 par(mar=c(5,6,4,2))
@@ -82,7 +82,7 @@ lapply(X = allrphirho, FUN = function(X) lines(X$r, X$rho, col=rgb(0,0,0,0.01)) 
 lines(truemodel$r, truemodel$rho, col="red", lwd=2)
 dev.off()
 ```
-![Figure 2: Estimated density profile](../results/Figures/density_profile_2020-08-02.png)
+![Figure 2: Estimated density profile](../results/Figures/density_profile_2020-08-04.png)
 
 
 OK, now I will try calculating the mass profile. Physically the mass contained within some distance $r$ of the cluster can be found by integrating the mass density $\rho (r)$ and assuming spherical symmetry
@@ -133,17 +133,21 @@ allmassprofiles <- apply(X = target$chain, MARGIN = 1, FUN = massprofile)
 saveRDS(allmassprofiles, file = paste0("../results/massprofiles_", Sys.Date(), ".rds"))
 
 ```
-```{r, echo=FALSE}
+```{r, echo=FALSE, results=FALSE}
 # load the above (r_h prior centered on 3.4)
 allmassprofiles34 <- readRDS("../results/massprofiles_2020-07-29")
 
 # (r_h prior centered on 3.0)
-allmassprofiles <- readRDS("../results/massprofiles_2020-08-02.rds")
+allmassprofiles <- readRDS("../results/massprofiles_2020-08-04.rds")
 
 
 # max M for plotting
 bigmassdataframe <- bind_rows(allmassprofiles, .id = "column_label")
 maxM <- max(bigmassdataframe$mass)
+
+# alt pars
+altpars <- c(1.4,5.0, 125892.0, 3.1)
+altmodel <- limepy$limepy(g=altpars[1], phi0=altpars[2], M=altpars[3], rh=altpars[4])
 
 # plot these
 png(filename = paste0("../results/Figures/mass_profile_", Sys.Date(), ".png"), width = 900)
@@ -156,13 +160,15 @@ lapply(X = allmassprofiles, FUN = function(X) lines(X$r, X$mass, col=rgb(0,0,0,0
 abline(h=median(target$chain[,3]), col="blue", lty=2)
 
 abline(h=truepars[3], col="darkgreen", lty=3, lwd=3)
-lines(truemodel$r, truemodel$mc, col="red", lwd=2)
+# lines(truemodel$r, truemodel$mc, col="red", lwd=2)
+
+lines(altmodel$r, altmodel$mc, col="red", lwd=2)
 
 legend("bottomright", lty=c(1,1,2,2), lwd=c(1, 1.5, 2,3), legend = c("posterior profiles", "true profile", "median mass estimate", "true total mass"), col=c("black", "red", "blue", "darkgreen"))
 dev.off()
 
 ```
 
-![Figure 3: Estimated cumulative mass profile](../results/Figures/mass_profile_2020-07-29.png)
+![Figure 3: Estimated cumulative mass profile](../results/Figures/mass_profile_2020-08-03.png)
 
 OK that's pretty neat! Where is the median estimate of the total mass?
