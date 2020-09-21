@@ -1,13 +1,15 @@
+alldata <- readRDS("../mockdata/snap_g14phi05M125892rh3_2020-08-04.rds")
 
+# get a random sample of the stars
+nsamp = 500
+set.seed(123)
+mydata = alldata[sample(x = 1:nrow(alldata), size = nsamp, replace = FALSE), ]
 
-# read in data 
-GCstars = readRDS("../mockdata/snap_g15phi05m1e5rh32020-03-09.rds")
+png(file = paste0("../results/Figures/velocity_profile_", Sys.Date(), ".pdf"), useDingbats = FALSE)
+par(mar=c(5,5,2,2))
+plot(alldata$r, alldata$v, xlab = "r (pc)", ylab = "v (100km/s)", col=rgb(0,0,0, alpha=0.03), cex.lab=1.5, cex.axis=1.5, main = "simulated data generated from a LIMEPY model")
+points(mydata$r, mydata$v, col="blue")
+grid()
+legend("topright", legend = c("all stars", "sample stars"), col = c("black", "blue"), pch = c(1,1))
 
-GCstarsall = read.table("../mockdata/snap_g15phi05m1e5rh3.dat", col.names = c("mass", "x", "y", "z", "vx", "vy", "vz", "ID", "notsure"))
-
-
-plot(GCstars, col=rgb(0,0,1,alpha = 0.05), pch=19)
-
-sampGCstars = GCstars[sample(x = 1:nrow(GCstars), size = 1e3, replace = F), ]
-
-plot(sampGCstars, col=rgb(0,0.6,1,alpha = 0.5), pch=19)
+dev.off()
