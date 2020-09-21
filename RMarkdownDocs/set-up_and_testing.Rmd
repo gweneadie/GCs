@@ -3,8 +3,8 @@ title: "Checking functions for GC Project"
 author: "Gwen Eadie"
 date: "15/07/2020"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 
 
@@ -319,7 +319,7 @@ pargrid = expand.grid(g = gseq, phi0 = phi0seq, M = Mseq, rh = rhseq)
 # Load the resulting target density from the grid search
 
 # gridsearch using r_h prior centered on 3.4
-target <- readRDS("../results/gridsearch_2020-07-08")
+target34 <- readRDS("../results/gridsearch_2020-07-08")
 
 # gridsearch using r_h prior centered on 3.0
 target <- readRDS("../results/gridsearch_2020-08-02.rds")
