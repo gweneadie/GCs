@@ -1,11 +1,11 @@
 # get list of files
-chainfilelist <- list.files("../results/paper1results/", pattern = "chain_limepy_subsamp500")
+chainfilelist <- list.files("../results/paper1results/RegenAll", pattern = "chain_limepy_subsamp500")
 
 # make a function to do stuff with each file
 getsummaries <- function(filename){
   
   # read in chain
-  chainobject <- readRDS( paste0("../results/paper1results/", filename) )$chain
+  chainobject <- readRDS( paste0("../results/paper1results/RegenAll/", filename) )$chain
   
   # extract summary statistics
   temp <- summary(chainobject)
