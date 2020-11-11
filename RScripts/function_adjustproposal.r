@@ -21,8 +21,8 @@ adjustproposal = function(acceptrange = c(0.2,0.4), yourpatience, Nsteps, initia
   # save only chain to use in next part
   initialchain = initialrun$chain
   
-  # while the acceptance rate is bad and the count is less than your patience, or if this is the first iteration.
-  while( (!goodacceptancerate) && (count<yourpatience) | count==1 ){
+  # while the acceptance rate is bad and the count is less than your patience, or if this is the first to fifth iteration.
+  while( (!goodacceptancerate) && (count<yourpatience) | count<=5 ){
     
     # change to new initial values (i.e. where chain stopped)
     newinitpars <- as.numeric( initialchain[nrow(initialchain), ] )
