@@ -6,7 +6,7 @@
 # initialrun:    a list that was returned from an initial run of GCmcmc()
 # ...:            other aguments to be passed to GCmcmc
 
-adjustproposal = function(acceptrange = c(0.2,0.4), yourpatience, Nsteps, initialrun, ... ){
+adjustproposal = function(acceptrange = c(0.2,0.4), yourpatience, Nsteps, initialrun, minrun=5, ... ){
   
   # start patience count
   count = 1
@@ -22,7 +22,7 @@ adjustproposal = function(acceptrange = c(0.2,0.4), yourpatience, Nsteps, initia
   initialchain = initialrun$chain
   
   # while the acceptance rate is bad and the count is less than your patience, or if this is the first to fifth iteration.
-  while( (!goodacceptancerate) && (count<yourpatience) | count<=5 ){
+  while( (!goodacceptancerate) && (count<yourpatience) | count<=minrun ){
     
     # change to new initial values (i.e. where chain stopped)
     newinitpars <- as.numeric( initialchain[nrow(initialchain), ] )
