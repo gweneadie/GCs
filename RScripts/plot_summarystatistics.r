@@ -1,16 +1,20 @@
+library(coda)
+
+mypath = "../results/paper1results/RegenOuter/"
+
 # get list of files
-chainfilelist <- list.files("../results/paper1results/RegenAll", pattern = "chain_limepy_subsamp500")
+chainfilelist <- list.files(mypath, pattern = "chain_limepy_subsamp500")
 
 # make a function to do stuff with each file
-getsummaries <- function(filename){
+getsummaries <- function(filename, path = mypath){
   
   # read in chain
-  chainobject <- readRDS( paste0("../results/paper1results/RegenAll/", filename) )$chain
+  chainobject <- readRDS( paste0(mypath, filename) )$chain
   
   # extract summary statistics
   temp <- summary(chainobject)
-  
-  # simplify into one data frame
+
+    # simplify into one data frame
   data.frame(temp[[1]], temp[[2]])
   
 }
@@ -34,6 +38,13 @@ df <- bind_rows(summaries)
 # change the characters for Parameters column into Factors
 df <- df %>% mutate_if(is.character, as.factor)
 
+# true parameter values
+# true parameter values
+trueg = 1.5
+truePhi0 = 5
+trueM=1e5
+truerh=3
+truepars = c(trueg, truePhi0, trueM, truerh)
 
 # does the 95% quantile contain the true parameter value?
 df$within95 <- df$X2.5.<truepars & df$X97.5.>truepars
@@ -66,11 +77,7 @@ quants <- function(x, quantiles=c("X25.", "X75."), parameter, seqy=0:49, ... ){
 y <- 0:49
 # expansion factor
 xfactor = 1.75
-# true parameter values
-trueg = 1.5
-truePhi0 = 5
-trueM=1e5
-truerh=3
+
 
 # sort the df sets by g mean estimate
 
@@ -90,7 +97,7 @@ quants(df, parameter="g", length=0.1)
 
 # Phi_0
 with(df, plot(Mean[Parameter=="Phi_0"], y, type="n", panel.first = TRUE, xlab = expression(Phi[0]), cex.lab=xfactor, cex.axis=xfactor, ylab="",yaxt="n",
-              xlim = c(truePhi0-1.25, truePhi0+1.25), main = bquote("within interquartile"~.(Phi0within)~"times out of 50") ))
+              xlim = c(truePhi0-5, truePhi0+1.25), main = bquote("within interquartile"~.(Phi0within)~"times out of 50") ))
 grid()
 
 abline(v=truePhi0, col="blue")
@@ -99,7 +106,7 @@ quants(df, parameter="Phi_0", length=0.1)
 
 # M
 with(df, plot(Mean[Parameter=="M"], y, type="n", panel.first = TRUE, xlab = expression(M[total]), cex.lab=xfactor, cex.axis=xfactor, ylab="",yaxt="n",
-              xlim = c( trueM-1e4, trueM+1e4), main = bquote("within interquartile"~.(Mwithin)~"times out of 50")) )
+              xlim = c( trueM-1e4, trueM+3e4), main = bquote("within interquartile"~.(Mwithin)~"times out of 50")) )
 grid()
 
 abline(v=trueM, col="blue")
@@ -108,7 +115,7 @@ quants(df, parameter="M", length=0.1)
 
 # rh
 with(df, plot(Mean[Parameter=="r_h"], y, type="n", panel.first = TRUE, xlab = expression(r[h]), cex.lab=xfactor, cex.axis=xfactor, ylab="",yaxt="n",
-              xlim = c( truerh-0.3, truerh+0.3), main = bquote("within interquartile"~.(rwithin)~"times out of 50")) )
+              xlim = c( truerh-0.3, truerh+2.3), main = bquote("within interquartile"~.(rwithin)~"times out of 50")) )
 grid()
 
 abline(v=truerh, col="blue")
@@ -116,7 +123,7 @@ with(df, points(df$Mean[Parameter=="r_h"], y) )
 quants(df, parameter="r_h", length=0.1)
 
 
-dev.off()
+
 
 
 
