@@ -1,6 +1,6 @@
 library(coda)
 
-mypath = "../results/paper1results/RegenOuter/"
+mypath = "../results/paper1results/RegenInsideCore/"
 
 # get list of files
 chainfilelist <- list.files(mypath, pattern = "chain_limepy_subsamp500")
@@ -87,7 +87,7 @@ par(mar=c(5,5,2,2), mfrow=c(1,4))
 
 # g
 with(df, plot(Mean[Parameter=="g"], y, type="n", panel.first = TRUE, xlab = "g", cex.lab=xfactor, cex.axis=xfactor, ylab="GC id", yaxt="n",
-              xlim = c(trueg-0.75, trueg+0.75), main = bquote("within interquartile"~.(gwithin)~"times out of 50") ))
+              xlim = c(trueg-0.75, trueg+2), main = bquote("within interquartile"~.(gwithin)~"times out of 50") ))
 axis(side = 2, at = y, labels = myorder)
 grid()
 
@@ -97,7 +97,7 @@ quants(df, parameter="g", length=0.1)
 
 # Phi_0
 with(df, plot(Mean[Parameter=="Phi_0"], y, type="n", panel.first = TRUE, xlab = expression(Phi[0]), cex.lab=xfactor, cex.axis=xfactor, ylab="",yaxt="n",
-              xlim = c(truePhi0-5, truePhi0+1.25), main = bquote("within interquartile"~.(Phi0within)~"times out of 50") ))
+              xlim = c(truePhi0-4, truePhi0+1.25), main = bquote("within interquartile"~.(Phi0within)~"times out of 50") ))
 grid()
 
 abline(v=truePhi0, col="blue")
@@ -106,7 +106,7 @@ quants(df, parameter="Phi_0", length=0.1)
 
 # M
 with(df, plot(Mean[Parameter=="M"], y, type="n", panel.first = TRUE, xlab = expression(M[total]), cex.lab=xfactor, cex.axis=xfactor, ylab="",yaxt="n",
-              xlim = c( trueM-1e4, trueM+3e4), main = bquote("within interquartile"~.(Mwithin)~"times out of 50")) )
+              xlim = c( trueM-1e5, trueM+1e4), main = bquote("within interquartile"~.(Mwithin)~"times out of 50")) )
 grid()
 
 abline(v=trueM, col="blue")
@@ -115,7 +115,7 @@ quants(df, parameter="M", length=0.1)
 
 # rh
 with(df, plot(Mean[Parameter=="r_h"], y, type="n", panel.first = TRUE, xlab = expression(r[h]), cex.lab=xfactor, cex.axis=xfactor, ylab="",yaxt="n",
-              xlim = c( truerh-0.3, truerh+2.3), main = bquote("within interquartile"~.(rwithin)~"times out of 50")) )
+              xlim = c( truerh-3, truerh+1), main = bquote("within interquartile"~.(rwithin)~"times out of 50")) )
 grid()
 
 abline(v=truerh, col="blue")
