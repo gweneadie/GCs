@@ -20,3 +20,13 @@ summary(results$chain)
 
 
 plot()
+
+source("function_pairsplot.r")
+library(coda)
+chain <- readRDS(file = "../results/paper1results/chain_limepy_subsamp500_m5r3g1.5phi5.0_41_2020-11-11.rds")
+
+plot(as.mcmc(chain$chain))
+
+summary(chain$chain)
+
+plotposterior(filename = "../results/paper1results/chain_limepy_m5r3g1.5phi5.0_0_2020-11-02_2020-11-03.rds", makepdf = FALSE, n=2 )
