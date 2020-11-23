@@ -14,9 +14,9 @@ plotposterior <- function(filename, makepdf=TRUE, n=10){
   
   if(makepdf){
     
-    id = strsplit(x = filename, split = "/")[[1]][3]
+    id = strsplit(x = filename, split = "/")[[1]][4]
     
-    pdf(file = paste("../results/posterior_", id, "_", Sys.Date(), ".pdf", sep=""), width=9, height=9)
+    pdf(file = paste("../results/paper1results/posterior_", id, "_", Sys.Date(), ".pdf", sep=""), width=9, height=9)
   
   }
   
