@@ -97,7 +97,7 @@ quants(df, parameter="g", length=0.1)
 
 # Phi_0
 with(df, plot(Mean[Parameter=="Phi_0"], y, type="n", panel.first = TRUE, xlab = expression(Phi[0]), cex.lab=xfactor, cex.axis=xfactor, ylab="",yaxt="n",
-              xlim = c(truePhi0-1.25, truePhi0+1.25), main = bquote("within interquartile"~.(Phi0within)~"times out of 50") ))
+              xlim = c(truePhi0-1.75, truePhi0+1.75), main = bquote("within interquartile"~.(Phi0within)~"times out of 50") ))
 grid()
 
 abline(v=truePhi0, col="blue")
