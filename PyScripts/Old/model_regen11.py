@@ -1,5 +1,5 @@
 import sys
-sys.path.append('/home/Gwenny/Documents/Work/Research/GCs/limepy/')
+sys.path.append('User/louzhiya/Documents/Astro/GCs')
 
 from limepy import limepy, sample, spes
 import numpy as np
@@ -12,9 +12,9 @@ random_seed=True
 
 #Set mass, radius, g, and phi0 for model
 m=1.e5
-r=1.
+r=3.
 g=1.5
-phi0=5.
+phi0=3.
 
 for i in range(0,ngen):
     model=limepy(g=g,phi0=phi0,M=m,rh=r)
