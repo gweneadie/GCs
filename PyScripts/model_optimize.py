@@ -6,7 +6,7 @@ from scipy.optimize import minimize, differential_evolution
 import corner
 
 # do you wish to include anisotropic models?
-anisotropic = False
+anisotropic = True
 
 # do you want to use slower but more robust optimization?
 diff_evol = True
@@ -104,6 +104,18 @@ try:
     spd = True
 except:
     pass
+
+# regularize dimensions so we don't overshoot bounds like crazy
+C = np.linalg.inv(H)
+for i in range(nparams):
+    stddev = np.sqrt(C[i, i])  # marginal width of Gaussian
+    if stddev > 2. * (bounds[i][1] - bounds[i][0]):
+        # compute rescaling factor
+        ratio = 2. * (bounds[i][1] - bounds[i][0]) / stddev
+        # rescale covariance
+        C[i, :] *= ratio
+        C[:, i] *= ratio
+H = np.linalg.inv(C)
 
 # print final Hessian
 print(t, H, logp)

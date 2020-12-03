@@ -7,7 +7,7 @@ import corner
 import dynesty
 
 # do you wish to include anisotropic models?
-anisotropic = False
+anisotropic = True
 
 # scale factor to inflate the Normal proposal
 inflate = 2.5  # inflate std dev by this factor
@@ -48,8 +48,25 @@ C = np.linalg.inv(Cinv)
 # generate samples from normal proposal distribution
 samples = np.random.multivariate_normal(theta_map, C, size=nsamps)
 
+# in some cases, the priors are significantly more restrictive
+# regenerate the samples to match this truncated normal distribution
+check = np.where(~np.isfinite(np.array([logprior(s) for s in samples])))[0]
+while len(check) > 0:
+    new_samps = np.random.multivariate_normal(theta_map, C, size=nsamps)
+    new_check = np.where(np.isfinite(np.array([logprior(s)
+                                               for s in new_samps])))[0]
+    L = min(len(new_check), len(check))
+    samples[check[:L]] = new_samps[new_check[:L]]
+    check = check[L:]
+
+# estimate scaling to account for difference in log-density
+scale = -np.log(np.sum([np.isfinite(logprior(s))
+                        for s in np.random.multivariate_normal(theta_map, C,
+                                                               size=int(1e7))])
+                / 1e7)
+
 # compute proposal log-probability
-const = np.linalg.slogdet(2. * np.pi * C)[1]
+const = np.linalg.slogdet(2. * np.pi * C)[1] + scale
 logq = -0.5 * np.array([(np.dot(np.dot((s - theta_map), Cinv), s - theta_map)
                          + const)
                         for s in samples])
@@ -79,7 +96,7 @@ with open(fsamps, 'wb') as f:
 
 # define labels for cornerplots
 if anisotropic:
-    labels = [r'$\log M$', r'$r_h$', r'$g$', r'$\Phi_0$', r'$r_a$']
+    labels = [r'$\log M$', r'$r_h$', r'$g$', r'$\Phi_0$', r'$\log r_a$']
 else:
     labels = [r'$\log M$', r'$r_h$', r'$g$', r'$\Phi_0$']
 

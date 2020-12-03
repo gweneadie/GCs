@@ -6,7 +6,7 @@ import emcee
 import corner
 
 # do you wish to include anisotropic models?
-anisotropic = False
+anisotropic = True
 
 # MCMC parameters
 chains = 100  # number of chains to run (this should be > N^2)
@@ -48,10 +48,15 @@ wt[~np.isfinite(wt)] = 0.  # deal with ill-defined weights
 wt /= wt.sum()  # normalize to sum to 1
 
 # get initial chain positions from the set of IS samples
-idxs = np.random.choice(len(theta_samps), size=chains, p=wt, replace=False)
+try:
+    # sample chains without replacement (ideal)
+    idxs = np.random.choice(len(theta_samps), size=chains, p=wt, replace=False)
+except:
+    # sample chains with replace (should be okay)
+    idxs = np.random.choice(len(theta_samps), size=chains, replace=True)
 theta_init = theta_samps[idxs]
 
-# initialize Differential Evolution MCMC sampler
+# initialize Differential Evolution MCMC (DEMCMC) sampler
 sampler = emcee.EnsembleSampler(chains, nparams, logpost,
                                 moves=emcee.moves.DEMove())
 
@@ -93,7 +98,7 @@ with open(fsamps, 'wb') as f:
 
 # define labels for cornerplots
 if anisotropic:
-    labels = [r'$\log M$', r'$r_h$', r'$g$', r'$\Phi_0$', r'$r_a$']
+    labels = [r'$\log M$', r'$r_h$', r'$g$', r'$\Phi_0$', r'$\log r_a$']
 else:
     labels = [r'$\log M$', r'$r_h$', r'$g$', r'$\Phi_0$']
 

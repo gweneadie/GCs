@@ -6,7 +6,7 @@ import dynesty
 import corner
 
 # do you wish to include anisotropic models?
-anisotropic = False
+anisotropic = True
 
 # MCMC parameters
 nlive = 500  # number of "live points"
@@ -41,7 +41,7 @@ results = sampler.results
 samples = results.samples
 logwt = results.logwt
 logz, logzerr = results.logz, results.logzerr
-wts = np.exp(logwt-np.nanmax(logwt))
+wts = np.exp(logwt - np.nanmax(logwt))
 
 # save samples
 if anisotropic:
@@ -56,7 +56,7 @@ with open(fsamps, 'wb') as f:
 
 # define labels for cornerplots
 if anisotropic:
-    labels = [r'$\log M$', r'$r_h$', r'$g$', r'$\Phi_0$', r'$r_a$']
+    labels = [r'$\log M$', r'$r_h$', r'$g$', r'$\Phi_0$', r'$\log r_a$']
 else:
     labels = [r'$\log M$', r'$r_h$', r'$g$', r'$\Phi_0$']
 
