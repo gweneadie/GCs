@@ -1,45 +1,8 @@
-############# Source libraries and functions needed
-library(MASS)
-library(coda)
+# load the optimization file that has good starting parameters
+# DEoptim <- readRDS(file = paste0("../results/paper1results/DEoptim_", modelname, "_", filename, "_", Sys.Date(), ".rds"))
 
-source("function_GCmcmc.r")
-source("function_proposal-distribution-modelpars.r")
-source("function_transform-parameters.r")
-source("function_iswhole.r")
-source("function_adjustproposal.r")
-source("function_priors.r")
-source("function_prior-wrapper.r")
-# source limepy function that uses reticulate
-source("function_logLike_LIMEPY.r")
-# log target density that will be used with optim()
-source("function_logtargetdensity.r")
-
-############## Optim run to get starting parameters
-# some test parameters for g, phi0, M, and rh
-gtest = 1.4
-phi0test = 5.1
-Mtest = 1e5
-rhtest = 3.1
-testpars <- c(gtest, phi0test, Mtest, rhtest)
-
-test <- optim(par = testpars, fn = targetdensity, mydat = mydata, logLike = logLike.limepy, priorfuncs = list(singleunif.prior, singleunif.prior, normlog10M.prior, truncnorm.prior), ppars = list( gbounds, phi0bounds, log10Mpars, rhpars), control=list(fnscale=-1, maxit=2e3, reltol=1e-10) )
-
-print(test)
-
-# run optim 5 times to be sure
-for( j in 1:3){
-  test <- optim(par = test$par, fn = targetdensity, mydat = mydata, logLike = logLike.limepy, priorfuncs = list(singleunif.prior, singleunif.prior, normlog10M.prior, truncnorm.prior), ppars = list( gbounds, phi0bounds, log10Mpars, rhpars), control=list(fnscale=-1), maxit=2e3, reltol=1e-11 )
-  
-  print(test)
-  
-}
-
-
-# save optim results to a file
-saveRDS(test, file = paste0("../results/optim_LIMEPYdata_LIMEPYmodel_", filename, "_", Sys.Date(), ".rds"))
-
-# use optim pars as initial parameters for first mcmc run
-initpars <- test$par
+# use DEopt xbest pars as initial parameters for first mcmc run
+initpars <- DEoptim$xbest
 
 ############## Initial mcmc run
 runinit = GCmcmc(init = initpars, mydat = mydata, logLike = logLike.limepy, priors = prior.wrapper, N = 500, 
@@ -49,11 +12,12 @@ runinit = GCmcmc(init = initpars, mydat = mydata, logLike = logLike.limepy, prio
                  propDF = mypropDF, covmat = covariancematrix, n.pars=4,
                  parnames = c("g", "Phi0", "M", "rh"))
 
+
 # save initial run to file
-saveRDS(object = runinit, file = paste0("../results/initrun_LIMEPYdata_500_LIMEPYmodel_", filename, "_", Sys.Date(), ".rds"))
+#saveRDS(object = runinit, file = paste0("../results/paper1results/initrun_", modelname, "_", filename, "_", Sys.Date(), ".rds"))
 
 ############## Finite adaptive mcmc run (burn in)
-newrun = adjustproposal(initialrun = runinit, acceptrange = c(0.26,0.4), Nsteps = 250, yourpatience = 10, mydat = mydata, logLike = logLike.limepy, priors = prior.wrapper, transform.pars = notransform.func, priorfuncs = list( singleunif.prior, singleunif.prior, normlog10M.prior, truncnorm.prior ), ppars = list( gbounds, phi0bounds, log10Mpars, rhpars ), propDF = mypropDF, parnames = c("g", "Phi_0", "M", "r_h"), n.pars=4)
+newrun = adjustproposal(initialrun = runinit, acceptrange = c(0.26,0.4), Nsteps = 250, yourpatience = 10, mydat = mydata, logLike = logLike.limepy, priors = prior.wrapper, transform.pars = notransform.func, priorfuncs = list( singleunif.prior, singleunif.prior, normlog10M.prior, truncnorm.prior ), ppars = list( gbounds, phi0bounds, log10Mpars, rhpars ), propDF = mypropDF, parnames = c("g", "Phi_0", "M", "r_h"), n.pars=4, minrun=7)
 
 # save burn-in to file
-saveRDS(newrun, file = paste("../results/burnin_LIMEPYdata_500_LIMEPYmodel_", filename, "_", Sys.Date(), ".rds", sep="") )
+saveRDS(newrun, file = paste0("../results/paper1results/RegenCompact/burnin_", modelname, "_", filename, "_", Sys.Date(), ".rds") )

@@ -1,6 +1,6 @@
 library("reticulate")
 
-use_python("/usr/bin/python3")
+use_python("/usr/local/bin/python",required = TRUE)
 limepy <- import("limepy")
 
 
