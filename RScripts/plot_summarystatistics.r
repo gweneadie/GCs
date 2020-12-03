@@ -1,6 +1,7 @@
 library(coda)
 
 mypath = "../results/paper1results/RegenExtended/"
+mypath = "../results/paper1results/RegenCompact/"
 
 # get list of files
 chainfilelist <- list.files(mypath, pattern = "chain_limepy_subsamp500")
@@ -41,9 +42,9 @@ df <- df %>% mutate_if(is.character, as.factor)
 # true parameter values
 # true parameter values
 trueg = 1.5
-truePhi0 = 5
+truePhi0 = 3
 trueM=1e5
-truerh=9
+truerh=3
 truepars = c(trueg, truePhi0, trueM, truerh)
 
 # does the 95% quantile contain the true parameter value?

@@ -30,3 +30,13 @@ plot(as.mcmc(chain$chain))
 summary(chain$chain)
 
 plotposterior(filename = "../results/paper1results/chain_limepy_m5r3g1.5phi5.0_0_2020-11-02_2020-11-03.rds", makepdf = FALSE, n=2 )
+plotposterior(filename = "../results/paper1results/RegenCompact/chain_limepy_subsamp500_m5r3g1.5phi3.0_9_2020-12-02.rds", makepdf = FALSE, n=2 )
+
+#making contour plots
+Chain_gphimr<- data.frame(chain$chain)
+View(Chain_gphimr)
+a<- ggplot(Chain_gphimr, aes(r_h,M)) +geom_point(alpha=0.5)  
+a+ stat_density_2d(aes(fill = stat(nlevel)), geom = "polygon") + scale_fill_viridis_c()
+
+
+
