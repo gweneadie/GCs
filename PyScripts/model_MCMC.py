@@ -77,8 +77,16 @@ print('Final auto-correlation time estimates:', tau)
 samples = sampler.get_chain(discard=nburnin)
 logp = sampler.get_log_prob(discard=nburnin)
 
+# estimate scaling to account for difference in log-density
+scale = -np.log(np.sum([np.isfinite(logprior(s))
+                        for s in np.random.multivariate_normal(theta_map,
+                                                               theta_C,
+                                                               size=int(1e7))])
+                / 1e7)
+
 # compute IS proposal log-probability
-const = np.linalg.slogdet(2. * np.pi * C)[1]
+const = np.linalg.slogdet(2. * np.pi * theta_C)[1] + scale
+Cinv = np.linalg.inv(theta_C)
 logq = -0.5 * np.array([(np.dot(np.dot((s - theta_map), Cinv), s - theta_map)
                          + const)
                         for s in samples.reshape(-1, nparams)])
