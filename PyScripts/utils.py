@@ -13,7 +13,7 @@ def loglike(theta):
         logM, rh, g, phi0 = theta
         logra = 6 - 1e-5
 
-    if np.any(theta < 0) or g >= 3.5:
+    if rh <= 0 or g <= 0 or g >= 3.5 or phi0 <= 0:
         return -np.inf
 
     try:
