@@ -5,6 +5,7 @@ import numpy as np
 from scipy.optimize import minimize, differential_evolution
 import corner
 import dynesty
+from matplotlib import pyplot as plt
 
 # do you wish to include anisotropic models?
 anisotropic = True

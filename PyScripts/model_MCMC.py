@@ -4,6 +4,7 @@ from limepy import limepy, sample, spes
 import numpy as np
 import emcee
 import corner
+from matplotlib import pyplot as plt
 
 # do you wish to include anisotropic models?
 anisotropic = True
