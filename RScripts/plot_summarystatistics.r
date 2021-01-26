@@ -1,6 +1,13 @@
 library(coda)
 
-mypath = "../results/paper1results/RegenExtended/"
+mypath = "../results/paper1results/Regen_highPhi0/"
+
+# true parameter values
+trueg = 1.5
+truePhi0 = 8
+trueM=1e5
+truerh=3
+truepars = c(trueg, truePhi0, trueM, truerh)
 
 # get list of files
 chainfilelist <- list.files(mypath, pattern = "chain_limepy_subsamp500")
@@ -28,9 +35,9 @@ summaries <- lapply(X = chainfilelist, FUN = getsummaries)
 summaries <- lapply(X = summaries, FUN = rownames_to_column, var="Parameter")
 
 # we want to order in increasing estimate of Mass, so get all the M estimates
-mymeans <- unlist( lapply(summaries, FUN = function(x){x$Mean[3]} ))
-myorder <- order(mymeans)
-summaries <- summaries[myorder]
+# mymeans <- unlist( lapply(summaries, FUN = function(x){x$Mean[3]} ))
+# myorder <- order(mymeans)
+# summaries <- summaries[myorder]
 
 # bind the rows into one data frame using dplyr
 df <- bind_rows(summaries)
@@ -38,13 +45,7 @@ df <- bind_rows(summaries)
 # change the characters for Parameters column into Factors
 df <- df %>% mutate_if(is.character, as.factor)
 
-# true parameter values
-# true parameter values
-trueg = 1.5
-truePhi0 = 5
-trueM=1e5
-truerh=9
-truepars = c(trueg, truePhi0, trueM, truerh)
+
 
 # does the 95% quantile contain the true parameter value?
 df$within95 <- df$X2.5.<truepars & df$X97.5.>truepars
