@@ -1,5 +1,11 @@
 library(MASS)
 library(coda)
+
+# set the relative location of the files where the data are, and where the results will be saved
+locale <- "CompactGC/subsamp500_inner/"
+modelname = "limepy"
+
+
 #' functions needed (I should make a package...)
 source('function_logLike_LIMEPY.r')
 source('function_priors.r')
@@ -15,25 +21,22 @@ source("function_adjustproposal.r")
 gbounds = c(1e-3, 3.5) # bounds for uniform prior on g
 phi0bounds = c(1.5, 14) # bounds for uniform prior on phi_0
 log10Mpars = c( 5.85, 0.6 ) # mean and standard deviation for log10(M)
-rhpars = c(0, 30, 1.0, 0.4) # lower bound, upper bound, mean, sd for r_h
+rhpars = c(0, 30, 3.0, 0.4) # lower bound, upper bound, mean, sd for r_h
 
 # Get the filenames needed
-filenamelist = list.files(path = "../mockdata/paper1data/CompactGC/subsamp500/", pattern = "subsamp")
+filenamelist = list.files(path = paste0("../mockdata/paper1data/", locale), pattern = "subsamp")
 
 filenamelist = unlist(strsplit(filenamelist, split = ".rds"))
 
 # get filenames for burnin
-burninlist <- list.files("../results/paper1results/RegenCompact/", pattern = "burnin")
-
-#' name for model assumption
-modelname = "limepy"
+burninlist <- list.files(paste0("../results/paper1results/", locale), pattern = "burnin")
 
 for(i in 1:length(burninlist)){
   # filename of mockdata
   filename <- filenamelist[i]
   
   # load burnin
-  burnin <- readRDS( paste0("../results/paper1results/RegenCompact/", burninlist[i]) )
+  burnin <- readRDS( paste0("../results/paper1results/", locale, burninlist[i]) )
   
   # load data 
   mydata <- burnin$lastchain$dat
