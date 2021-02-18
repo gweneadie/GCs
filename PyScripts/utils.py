@@ -3,7 +3,6 @@ def loglike(theta):
     """
     Log-likelihood function of the input parameters. Will work with both
     the isotropic and anisotropic case.
-
     """
 
     # read input parameters
@@ -13,7 +12,7 @@ def loglike(theta):
         logM, rh, g, phi0 = theta
         logra = 6 - 1e-5
 
-    if np.any(theta < 0) or g >= 3.5:
+    if rh <= 0 or g <= 0 or g >= 3.5 or phi0 <= 0:
         return -np.inf
 
     try:
@@ -39,7 +38,6 @@ def loglike(theta):
 def logprior(theta):
     """
     Log-prior function of the input parameters.
-
     """
 
     # read input parameters
@@ -77,7 +75,6 @@ def logprior(theta):
 def prior_transform(u):
     """
     Prior transform.
-
     """
 
     # read input parameters
@@ -100,7 +97,6 @@ def prior_transform(u):
 def logpost(theta):
     """
     Log-posterior function of the input parameters.
-
     """
 
     return loglike(theta) + logprior(theta)
@@ -111,7 +107,6 @@ def neglogp(theta):
     """
     Negative of the log-posterior function of the input parameters.
     Used for optimization.
-
     """
 
     lnp = logpost(theta)
@@ -126,7 +121,6 @@ def hessian(t, logp, delta=1e-3):
     Compute the Hessian expansion around `t` with corresponding log-posterior
     `logp` using finite-differencing with step-size `delta`.
     Second-order approximation (i.e. 4 function evaluations per element).
-
     """
 
     H = np.zeros((nparams, nparams))

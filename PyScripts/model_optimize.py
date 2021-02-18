@@ -12,7 +12,7 @@ anisotropic = True
 diff_evol = True
 
 # data to be loaded in
-fname = 'm5r3g1.5phi5.0'  # data file
+fname = 'm5r3g1.5phi3.0a0.8'  # data file
 logn = 2.7  # log of number of stars to read in
 
 # file paths
@@ -25,7 +25,7 @@ x, y, z, vx, vy, vz = np.loadtxt(fpath + fname + '.dat')[:n].T
 nparams = 4 + anisotropic
 
 # define utility functions
-exec(open('PyScripts/utils.py').read())
+exec(open('utils.py').read())
 
 # optimization
 if anisotropic:

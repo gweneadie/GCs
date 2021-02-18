@@ -5,6 +5,7 @@ import numpy as np
 from scipy.optimize import minimize, differential_evolution
 import corner
 import dynesty
+from matplotlib import pyplot as plt
 
 # do you wish to include anisotropic models?
 anisotropic = True
@@ -39,7 +40,7 @@ with open(fopt, 'rb') as f:
     theta_H = np.load(f)
 
 # define utility functions
-exec(open('PyScripts/utils.py').read())
+exec(open('utils.py').read())
 
 # generate precision/covariance matrix
 Cinv = theta_H / inflate**2

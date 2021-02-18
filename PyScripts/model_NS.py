@@ -4,6 +4,7 @@ from limepy import limepy, sample, spes
 import numpy as np
 import dynesty
 import corner
+from matplotlib import pyplot as plt
 
 # do you wish to include anisotropic models?
 anisotropic = True
@@ -14,7 +15,7 @@ dlogz = 0.01  # termination criterion
 min_eff = 20.  # minimum efficiency for first update
 
 # data to be loaded in
-fname = 'm5r3g1.5phi5.0'  # data file
+fname = 'm5r3g1.5phi3.0a0.8'  # data file
 logn = 2.7  # log of number of stars to read in
 
 # file paths
@@ -27,7 +28,7 @@ x, y, z, vx, vy, vz = np.loadtxt(fpath + fname + '.dat')[:n].T
 nparams = 4 + anisotropic
 
 # define utility functions
-exec(open('PyScripts/utils.py').read())
+exec(open('utils.py').read())
 
 # initialize Differential Evolution MCMC sampler
 sampler = dynesty.NestedSampler(loglike, prior_transform, nparams,
