@@ -38,8 +38,7 @@ massprofile <- function(pars){
   myfunction <- splinefun(x = model$r, y = 4*pi*model$rho*(model$r^2), method="natural")
   
   # integrate each section to get cumulative mass profile
-  
-  for(i in 2:nr){
+    for(i in 2:nr){
    output$mass[i] <- integrate(f = myfunction, lower=output$r[1], upper = model$r[i-1], subdivisions = 100)$value
   }
   

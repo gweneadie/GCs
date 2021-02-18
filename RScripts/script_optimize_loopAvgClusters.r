@@ -1,12 +1,12 @@
 # set the relative location of the files where the data are, and where the results will be saved
-locale <- "CompactGC/subsamp500_inner/"
+locale <- "CompactGC/subsamp500_outer/"
 modelname = "limepy"
 
 #' set prior bounds
 gbounds = c(1e-3, 3.5) # bounds for uniform prior on g
 phi0bounds = c(1.5, 14) # bounds for uniform prior on phi_0
 log10Mpars = c( 5.85, 0.6 ) # mean and standard deviation for log10(M)
-rhpars = c(0, 30, 1.1, 0.4) # lower bound, upper bound, mean, sd for r_h
+rhpars = c(0, 30, 1.2, 0.4) # lower bound, upper bound, mean, sd for r_h
 
 # source functions needed
 source('function_logLike_LIMEPY.r')
