@@ -1,7 +1,7 @@
 # calculate summary statistics for all of the different analyses
 
 # get the files for the chains
-foldername = "Regen_lowPhi0/"
+foldername = "ExtendedGC/subsamp500_inner/"
 mypath = paste0("../results/paper1results/", foldername)
 
 # get list of files
@@ -48,4 +48,6 @@ Phi0within = sum(df$within50[df$Parameter=="Phi_0"])
 Mwithin = sum(df$within50[df$Parameter=="M"])
 rwithin = sum(df$within50[df$Parameter=="r_h"])
 
-saveRDS(object = list(dfsummaries = df, within = c(gwithin, Phi0within, Mwithin, rwithin)), paste0("../results/paper1results/", foldername, "summarystatistics_", Sys.Date(), ".rds"))
+saveRDS(object = list(dfsummaries = df, within = c(gwithin, Phi0within, Mwithin, rwithin), truepars=truepars), paste0("../results/paper1results/", foldername, "summarystatistics_", Sys.Date(), ".rds"))
+
+rm(list=ls())
