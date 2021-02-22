@@ -13,39 +13,20 @@ truepars = c(trueg, truePhi0, trueM, truerh)
 # get list of files
 chainfilelist <- list.files(mypath, pattern = "chain_limepy_subsamp500")
 
-# make a function to do stuff with each file
-getsummaries <- function(filename, path = mypath){
-  
-  # read in chain
-  chainobject <- readRDS( paste0(mypath, filename) )$chain
-  
-  # extract summary statistics
-  temp <- summary(chainobject)
-
-    # simplify into one data frame
-  data.frame(temp[[1]], temp[[2]])
-  
-}
+source("function_summaries.R")
 
 library(dplyr)
 library(tibble)
 
 # use an apply to get all summary statistics
 summaries <- lapply(X = chainfilelist, FUN = getsummaries)
-
 summaries <- lapply(X = summaries, FUN = rownames_to_column, var="Parameter")
-
-# we want to order in increasing estimate of Mass, so get all the M estimates
-# mymeans <- unlist( lapply(summaries, FUN = function(x){x$Mean[3]} ))
-# myorder <- order(mymeans)
-# summaries <- summaries[myorder]
 
 # bind the rows into one data frame using dplyr
 df <- bind_rows(summaries)
 
 # change the characters for Parameters column into Factors
 df <- df %>% mutate_if(is.character, as.factor)
-
 
 
 # does the 95% quantile contain the true parameter value?
