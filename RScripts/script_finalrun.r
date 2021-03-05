@@ -10,4 +10,4 @@ finalrun <- GCmcmc(init = burnin$newinitpars, mydat = mydata, logLike = logLike.
        
 
 # save chain to file
-saveRDS(object = finalrun, file = paste0("../results/paper1results/RegenCompact/chain_", modelname, "_", filename, "_", Sys.Date(), ".rds") )
+saveRDS(object = finalrun, file = paste0("../results/paper1results/", locale, "chain_", modelname, "_", filename, "_", Sys.Date(), ".rds") )
