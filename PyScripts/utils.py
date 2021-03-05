@@ -67,8 +67,11 @@ def logprior(theta):
         # rh: uniform
         rhprior = np.log(1. / (30. - 0.))
 
-        # ra: uniform
-        lograprior = np.log(1. / (6. - (-1.)))
+        # logra: uniform
+        if anisotropic:
+            lograprior = np.log(1. / (6. - (-1.)))
+        else:
+            lograprior = 0.
 
         return gprior + logMprior + phi0prior + rhprior + lograprior
 

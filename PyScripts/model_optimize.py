@@ -42,8 +42,8 @@ else:
     res = minimize(neglogp, theta0, method='nelder-mead')
 
 # compute Hessian
-t, logp = np.copy(res['x']), -res['fun']
-theta_H = hessian(t, logp)
+theta_map, logp = np.copy(res['x']), -res['fun']
+theta_H = hessian(theta_map, logp)
 
 # clean up Hessian
 H = np.copy(theta_H)
@@ -93,7 +93,7 @@ if not spd:
         pass
 if not spd:
     # final solution: just get rid of final covariances (logra)
-    width = 1. / 20.  # normalized width relative to bounds
+    width = 1. / 2.  # normalized width relative to bounds
     H2 = np.zeros_like(H)
     H2[:-1, :-1] = np.linalg.inv(H[:-1, :-1])
     H2[-1, -1] = ((6. - (-1.)) / 2. * width / inflate)**2
@@ -109,16 +109,17 @@ except:
 C = np.linalg.inv(H)
 for i in range(nparams):
     stddev = np.sqrt(C[i, i])  # marginal width of Gaussian
-    if stddev > 2. * (bounds[i][1] - bounds[i][0]):
+    threshold = (bounds[i][1] - bounds[i][0]) / 4  # half prior width
+    if stddev > threshold:
         # compute rescaling factor
-        ratio = 2. * (bounds[i][1] - bounds[i][0]) / stddev
+        ratio = threshold / stddev
         # rescale covariance
         C[i, :] *= ratio
         C[:, i] *= ratio
 H = np.linalg.inv(C)
 
 # print final Hessian
-print(t, H, logp)
+print(theta_map, H, C, logp)
 
 # write out results
 if anisotropic:
@@ -126,6 +127,6 @@ if anisotropic:
 else:
     fout = fpath + fout + fname + '_optim_{}.npy'.format(logn)
 with open(fout, 'wb') as f:
-    np.save(f, t)
+    np.save(f, theta_map)
     np.save(f, logp)
     np.save(f, H)
