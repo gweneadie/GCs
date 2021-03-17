@@ -12,7 +12,7 @@ random_seed=True
 
 #Set mass, radius, g, and phi0 for model
 m=1.e5
-r=1.
+r=3.
 g=1.5
 phi0=5.
 
@@ -23,6 +23,6 @@ for i in range(0,ngen):
     else:
         data=sample(model,N=int(m))
             
-    filename='../mockdata/paper1data/CompactGC/m%sr%sg%sphi%s_%s_projected.dat' % (str(int(np.log10(m))),str(int(r)),str(g),str(phi0),str(i))
+    filename='../mockdata/paper1data/ProjectedGC/m%sr%sg%sphi%s_%s_projected.dat' % (str(int(np.log10(m))),str(int(r)),str(g),str(phi0),str(i))
     print(filename)
-    np.savetxt(filename,np.column_stack([data.x,data.y,np.zeros(len(data.x)),data.vx,data.vy,np.zeros(len(data.x)]))
+    np.savetxt( filename, np.column_stack( [data.x, data.y, np.zeros(len(data.x)), data.vx, data.vy, np.zeros(len(data.x))] ))
