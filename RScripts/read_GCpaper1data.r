@@ -1,5 +1,6 @@
 # Make a list of the data filenames needed
-filenamelist = list.files(path = "../mockdata/paper1data/CompactGC/")
+folder <- "ProjectedGC/"
+filenamelist = list.files(path = paste0("../mockdata/paper1data/", folder))
 
 filenamelist = unlist(strsplit(filenamelist, split = ".dat"))
 
@@ -10,11 +11,11 @@ for(i in 1:length(filenamelist)){
   
   filename = filenamelist[i]
   
-  GCstars <- read.table(paste0("../mockdata/paper1data/CompactGC/", filename, ".dat"), col.names = c("x", "y", "z", "vx", "vy", "vz"))
+  GCstars <- read.table(paste0("../mockdata/paper1data/", folder, filename, ".dat"), col.names = c("x", "y", "z", "vx", "vy", "vz"))
   
     mydata = distancespeed(GCstars)
   
   # save
-  saveRDS(object = mydata, file = paste0("../mockdata/paper1data/CompactGC/", filename, ".rds"))
+  saveRDS(object = mydata, file = paste0("../mockdata/paper1data/", folder, filename, ".rds"))
   
 }
