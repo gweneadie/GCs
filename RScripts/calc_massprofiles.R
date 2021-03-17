@@ -4,7 +4,7 @@
 source("function_profiles.r")
 
 # folder
-folder <- "RegenAll/"
+folder <- "RegenCompact/"
 
 # look at the ith file
 i = 13
@@ -24,6 +24,9 @@ truepars = as.numeric( c( paste0(parnums[3], ".", parnums[4]), paste0(parnums[5]
 results <- readRDS(file = paste0("../results/paper1results/", folder, filenamelist[i]) )
 
 allmassprofiles <- apply(X = results$chain, MARGIN = 1, FUN = massprofile)
+
+# save the true parameter values too
+saveRDS(truepars, file=paste0("../results/paper1results/", folder, "truepars.rds"))
 
 # save because that took a while!
 saveRDS(allmassprofiles, file = paste0("../results/paper1results/", folder, "massprofiles_", filename, "_", Sys.Date(), ".rds"))
