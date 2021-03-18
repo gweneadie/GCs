@@ -2,8 +2,8 @@
 
 library("reticulate")
 
-use_python("/usr/bin/python3")
-
+#use_python("/usr/bin/python3")
+use_python("/usr/local/bin/python3",required = TRUE)
 
 # import_from_path(module = "limepy", path = "/usr/local/lib/python3.7/site-packages/")
 
