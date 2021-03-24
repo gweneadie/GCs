@@ -14,9 +14,19 @@ mockdatafolders <- c("RegenAll/subsamp500_random/", "RegenAll/subsamp500_outside
 
 plotTitle <- c("Random", "Outside Core", "Inside Core","","","","","","")
 outermarginleft <- c("Average", "", "", "Compact", "", "", "Extended", "", "")
+outermarginbottom <- c(rep("", 6), "", "r (pc)", "")
+
+# set a character string vectors for the y-axes and x-axes
+Ylab = expression(M(r<R)~(10^5~M['\u0298']))
+Ylab = c(Ylab, "", "", Ylab, "","", Ylab, "", "")
+Xlab = ""
+
+
+# open file to write to
+pdf(file = paste0("../Figures/grid_massprofiles_", Sys.Date(), ".pdf"), width = 8, height = 6)
 
 # set up the outer margins, inner margins, grid, etc.
-par(mfrow=c(3,3), oma=c(2,5,3,5))
+par(mfrow=c(3,3), oma=c(3,5,3,5), mai=c(0.5,0.6,0,0))
 
 for(i in 1:length(resultsfolders)){
   
@@ -35,9 +45,6 @@ for(i in 1:length(resultsfolders)){
   # load the mass profile posterior samples
   results <- readRDS(paste0("../results/paper1results/", resultsfolders[i],  resultsfile))
   
-  # set a character string for the y-axis and x-axis
-  mylaby = expression(M(r<R)~(10^5~M['\u0298']))
-  mylabx = "r (pc)"
   
   # set the y and x range for all plots
   yrange = list(c(0,1.5), c(0,1.5), c(0,1.5))
@@ -51,16 +58,18 @@ for(i in 1:length(resultsfolders)){
   # true total mass
   truetotalcol = "darkgreen"
   
-  plot(results[[1]]$r, results[[1]]$mass/1e5, xlab=mylabx, ylab=mylaby, xlim = xrange[[ceiling(i/3)]], ylim=yrange[[ceiling(i/3)]], yaxt="n", xaxt="n", type="n", main=plotTitle[i])
+  plot(results[[1]]$r, results[[1]]$mass/1e5, xlab=Xlab, ylab=Ylab[i], xlim = xrange[[ceiling(i/3)]], ylim=yrange[[ceiling(i/3)]], yaxt="n", xaxt="n", type="n", main="")
   
   axis(side = 1, at=0:xrange[[ceiling(i/3)]][2])
   axis(side = 2)
   grid()
   
   mtext(text = outermarginleft[i], side = 2, line=5)
+  mtext(text = outermarginbottom[i], side=1, line=3)
+  mtext(text = plotTitle[i], side = 3, line=1)
   
   # add all the different mass profiles from the posterior
-  lapply(X = results, FUN = function(X) lines(X$r, X$mass/1e5, col=rgb(0,0,0,0.008)) )
+  lapply(X = results, FUN = function(X) lines(X$r, X$mass/1e5, col=rgb(0,0,0,0.006)) )
   
   abline(h=truepars[3]/1e5, col="darkgreen", lty=3, lwd=3)
   
@@ -70,6 +79,6 @@ for(i in 1:length(resultsfolders)){
   
 }
 
-# # turn off device
-# dev.off()
+# turn off device
+dev.off()
 
