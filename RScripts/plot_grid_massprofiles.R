@@ -1,4 +1,7 @@
 # script to make 3x3 grid of mass profiles for paper
+library(Cairo)
+# source functions needed
+source('function_logLike_LIMEPY.r')
 
 # we will plot the 13th file as an example for each case
 example = 13
@@ -6,7 +9,7 @@ example = 13
 # make a vector of the folders in the order that you want them plotted
 resultsfolders <- c("RegenAll/", "RegenOutsideCore/", "RegenInsideCore/",
              "RegenCompact/", "CompactGC/subsamp500_outer/", "CompactGC/subsamp500_inner/",
-             "RegenExtended/", "ExtendedGC/subsamp500_outer/", "ExtendedGC/subsamp500_Inner/")
+             "RegenExtended/", "ExtendedGC/subsamp500_outer/", "ExtendedGC/subsamp500_inner/")
 
 mockdatafolders <- c("RegenAll/subsamp500_random/", "RegenAll/subsamp500_outsidecore/", "RegenAll/subsamp500_insidecore/",
                      "CompactGC/subsamp500/", "CompactGC/subsamp500_outer/", "CompactGC/subsamp500_inner/",
@@ -17,7 +20,7 @@ outermarginleft <- c("Average", "", "", "Compact", "", "", "Extended", "", "")
 outermarginbottom <- c(rep("", 6), "", "r (pc)", "")
 
 # set a character string vectors for the y-axes and x-axes
-Ylab = expression(M(r<R)~(10^5~M['\u0298']))
+Ylab = expression(M(r<R)~(10^5~M['\u2609']))
 Ylab = c(Ylab, "", "", Ylab, "","", Ylab, "", "")
 Xlab = ""
 
@@ -34,7 +37,7 @@ meancol = "lightblue"
 truetotalcol = "darkgreen"
 
 # open file to write to
-pdf(file = paste0("../Figures/grid_massprofiles_", Sys.Date(), ".pdf"), width = 8, height = 6)
+png(filename = paste0("../Figures/grid_massprofiles_", Sys.Date(), ".png"), res=100, width=900, height=800)
 
 # set up the outer margins, inner margins, grid, etc.
 par(mfrow=c(3,3), oma=c(3,5,3,5), mai=c(0.5,0.6,0,0))
@@ -59,7 +62,7 @@ for(i in 1:length(resultsfolders)){
   # make the plot!
   plot(results[[1]]$r, results[[1]]$mass/1e5, xlab=Xlab, ylab=Ylab[i], xlim = xrange[[ceiling(i/3)]], ylim=yrange[[ceiling(i/3)]], yaxt="n", xaxt="n", type="n", main="")
   
-  axis(side = 1, at=0:xrange[[ceiling(i/3)]][2])
+  axis(side = 1)
   axis(side = 2)
   grid()
   
@@ -73,8 +76,8 @@ for(i in 1:length(resultsfolders)){
   abline(h=truepars[3]/1e5, col="darkgreen", lty=3, lwd=3)
   
   # calculate true model and add to plot true model mass profile
-  # truemodel <- limepy$limepy(g=truepars[1], phi0=truepars[2], M=truepars[3], rh=truepars[4])
-  # lines(truemodel$r, truemodel$mc, col="red", lwd=2)
+  truemodel <- limepy$limepy(g=truepars[1], phi0=truepars[2], M=truepars[3], rh=truepars[4])
+  lines(truemodel$r, truemodel$mc/1e5, col="red", lwd=2)
   
 }
 
