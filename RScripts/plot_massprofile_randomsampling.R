@@ -54,7 +54,7 @@ for(i in 1:length(resultsfolders)){
   results <- readRDS(paste0("../results/paper1results/", resultsfolders[i],  resultsfile))
   
   # make the plot!
-  plot(results[[1]]$r, results[[1]]$mass/1e5, xlab=Xlab, ylab=Ylab[i], xlim = xrange[[i]], ylim=yrange[[i]],  type="n", main="", )
+  plot(results[[1]]$r, results[[1]]$mass/1e5, xlab=Xlab, ylab=Ylab[i], xlim = xrange[[i]], ylim=yrange[[i]],  type="n", main="", las=1)
   
   grid()
   
