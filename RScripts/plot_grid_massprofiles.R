@@ -21,6 +21,17 @@ Ylab = expression(M(r<R)~(10^5~M['\u0298']))
 Ylab = c(Ylab, "", "", Ylab, "","", Ylab, "", "")
 Xlab = ""
 
+# set the y and x range for all plots
+yrange = list(c(0,1.5), c(0,1.5), c(0,1.5))
+xrange = list(c(0,10), c(0,10), c(0,30))
+
+# set the x range for each type of GC
+# colour for true mass profile
+truecol = "red"
+# colour for mean mass profile
+meancol = "lightblue"
+# true total mass
+truetotalcol = "darkgreen"
 
 # open file to write to
 pdf(file = paste0("../Figures/grid_massprofiles_", Sys.Date(), ".pdf"), width = 8, height = 6)
@@ -45,19 +56,7 @@ for(i in 1:length(resultsfolders)){
   # load the mass profile posterior samples
   results <- readRDS(paste0("../results/paper1results/", resultsfolders[i],  resultsfile))
   
-  
-  # set the y and x range for all plots
-  yrange = list(c(0,1.5), c(0,1.5), c(0,1.5))
-  xrange = list(c(0,10), c(0,10), c(0,30))
-  
-  # set the x range for each type of GC
-  # colour for true mass profile
-  truecol = "red"
-  # colour for mean mass profile
-  meancol = "lightblue"
-  # true total mass
-  truetotalcol = "darkgreen"
-  
+  # make the plot!
   plot(results[[1]]$r, results[[1]]$mass/1e5, xlab=Xlab, ylab=Ylab[i], xlim = xrange[[ceiling(i/3)]], ylim=yrange[[ceiling(i/3)]], yaxt="n", xaxt="n", type="n", main="")
   
   axis(side = 1, at=0:xrange[[ceiling(i/3)]][2])
