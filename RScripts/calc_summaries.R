@@ -1,7 +1,7 @@
 # calculate summary statistics for all of the different analyses
 
 # get the files for the chains
-foldername = "RegenExtended/"
+foldername = "ExtendedGC/subsamp500_outer/"
 mypath = paste0("../results/paper1results/", foldername)
 
 # get list of files
@@ -43,11 +43,17 @@ df$within95 <- df$X2.5.<truepars & df$X97.5.>truepars
 # how about the 50%
 df$within50 <- df$X25.<truepars & df$X75.>truepars
 
+
 gwithin = sum(df$within50[df$Parameter=="g"])
 Phi0within = sum(df$within50[df$Parameter=="Phi_0"]) 
 Mwithin = sum(df$within50[df$Parameter=="M"])
 rwithin = sum(df$within50[df$Parameter=="r_h"])
 
-saveRDS(object = list(dfsummaries = df, within = c(gwithin, Phi0within, Mwithin, rwithin), truepars=truepars), paste0("../results/paper1results/", foldername, "summarystatistics_", Sys.Date(), ".rds"))
+gwithin95 = sum(df$within95[df$Parameter=="g"])
+Phi0within95 = sum(df$within95[df$Parameter=="Phi_0"]) 
+Mwithin95 = sum(df$within95[df$Parameter=="M"])
+rwithin95 = sum(df$within95[df$Parameter=="r_h"])
+
+saveRDS(object = list(dfsummaries = df, within = c(gwithin, Phi0within, Mwithin, rwithin), within95 = c(gwithin95, Phi0within95, Mwithin95, rwithin95), truepars=truepars), paste0("../results/paper1results/", foldername, "summarystatistics_", Sys.Date(), ".rds"))
 
 rm(list=ls())
