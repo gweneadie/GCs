@@ -1,7 +1,18 @@
 library(coda)
 library(Cairo)
 
-foldername = "RegenExtended"
+foldername = "RegenInsideCore"
+plottitle = "Average GCs, stars sampled inside core"
+# if you want to set ranges explicitly
+grange = c(0, 3)
+Phi0range = c(1,9)
+Mrange = c(5000, 115000)
+rhrange  =c(0, 4) # need to change for each type of cluster if using this
+
+# plot 50% or 95%??
+# thisquant <- c("X25.", "X75.")
+thisquant <- c("X2.5.", "X97.5.")
+
 mypath = paste0("../results/paper1results/", foldername, "/")
 
 # get summary statistics
@@ -44,11 +55,9 @@ xrange <- function(param, dframe=df, truep=truepars, interval = c("X25.", "X75."
   out
 }
 
-# plot 50% or 95%??
-thisquant <- c("X2.5.", "X97.5.")
 
 # pdf(paste0("../Figures/", foldername, "_limepy_subsamp500_interquartiles_", Sys.Date(), ".pdf"), width=9, height=7)
-png(paste0("../Figures/", foldername, "_limepy_subsamp500_interquartiles_", Sys.Date(), ".png"), width=9, height=7, units = "in", res=600)
+png(paste0("../Figures/", foldername, "_limepy_subsamp500_95credint_", Sys.Date(), ".png"), width=9, height=7, units = "in", res=600)
 
 
 # set up plotting area
@@ -58,8 +67,10 @@ par(mar=c(5,5,2,0))
 
 
 with(df, plot(Mean[Parameter=="g"], y, type="n", panel.first = TRUE, xlab = "g", cex.lab=xfactor, cex.axis=xfactor, ylab="GC id", yaxt="n",
-              xlim = xrange(param="g",interval = thisquant), main = bquote(.(gwithin)/50) ))
-title(main = foldername, outer = TRUE)
+              # xlim = xrange(param="g",interval = thisquant), 
+              xlim = grange,
+              main = bquote(.(gwithin)/50) ))
+title(main = plottitle, outer = TRUE, line = -0.05)
 axis(side = 2, at = y, labels=y)
 grid()
 abline(v=truepars["g"], col="blue")
@@ -70,7 +81,10 @@ quants(df, parameter="g", length=0.1, quantiles = thisquant)
 
 par(mar=c(5,2,2,2))
 
-with(df, plot(Mean[Parameter=="Phi_0"], y, type="n", panel.first = TRUE, xlab = expression(Phi[0]), cex.lab=xfactor, cex.axis=xfactor, ylab="",yaxt="n", xlim = xrange("Phi_0", interval = thisquant), main = bquote(.(Phi0within)/50) ))
+with(df, plot(Mean[Parameter=="Phi_0"], y, type="n", panel.first = TRUE, xlab = expression(Phi[0]), cex.lab=xfactor, cex.axis=xfactor, ylab="",yaxt="n", 
+              # xlim = xrange("Phi_0", interval = thisquant), 
+              xlim = Phi0range,
+              main = bquote(.(Phi0within)/50) ))
 grid()
 
 abline(v=truepars["Phi_0"], col="blue")
@@ -80,7 +94,10 @@ quants(df, parameter="Phi_0", length=0.1, quantiles = thisquant)
 # M
 par(mar=c(5,2,2,2))
 
-with(df, plot(Mean[Parameter=="M"], y, type="n", panel.first = TRUE, xlab = expression(M[total]~(M['\u2609'])), cex.lab=xfactor, cex.axis=xfactor, ylab="",yaxt="n", xaxt="n", xlim = xrange("M", interval = thisquant), main = bquote(.(Mwithin)/50)) )
+with(df, plot(Mean[Parameter=="M"], y, type="n", panel.first = TRUE, xlab = expression(M[total]~(M['\u2609'])), cex.lab=xfactor, cex.axis=xfactor, ylab="",yaxt="n", xaxt="n", 
+              # xlim = xrange("M", interval = thisquant), 
+              xlim = Mrange,
+              main = bquote(.(Mwithin)/50)) )
 grid()
 axis(side=1)
 abline(v=truepars["M"], col="blue")
@@ -90,7 +107,10 @@ quants(df, parameter="M", length=0.1, quantiles = thisquant)
 # rh
 par(mar=c(5,2,2,2))
 
-with(df, plot(Mean[Parameter=="r_h"], y, type="n", panel.first = TRUE, xlab = expression(r[h]~(pc)), cex.lab=xfactor, cex.axis=xfactor, ylab="",yaxt="n", xlim = xrange("r_h", interval = thisquant), main = bquote(.(rwithin)/50)) )
+with(df, plot(Mean[Parameter=="r_h"], y, type="n", panel.first = TRUE, xlab = expression(r[h]~(pc)), cex.lab=xfactor, cex.axis=xfactor, ylab="",yaxt="n", 
+              # xlim = xrange("r_h", interval = thisquant), 
+              xlim = rhrange,
+              main = bquote(.(rwithin)/50)) )
 grid()
 
 abline(v=truepars["r_h"], col="blue")
