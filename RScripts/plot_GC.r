@@ -17,7 +17,7 @@ xrange <- c(-10, 10)
 yrange <- c(-20, 20)
 rrange <- c(0, 20)
 vrange <- c(0,30)
-mycex = 1.5
+mycex = 1.6
 
 compsamp <- compact[ sample(x = nrow(compact), size = nplot, replace = FALSE), ]
 avgsamp <- average[ sample(x = nrow(average), size = nplot, replace = FALSE), ]
@@ -30,40 +30,40 @@ avgsamp[, c("r", "v")] <- distancespeed(avgsamp)
 extsamp[, c("r", "v")] <- distancespeed(extsamp)
   
 pdf(file = paste0("../Figures/Example_ThreeGCs", "_", Sys.Date(), ".pdf"), useDingbats = FALSE, height=7, width = 9)
-par(mfrow=c(2,3), mar=c(5,0,2,0), oma=c(0,5,2,2))
+par(mfrow=c(2,3), mar=c(5,0,2,0), oma=c(0,6,2,2))
 
-plot(compsamp$x, compsamp$y, asp=1, xlab="x (pc)", ylab="", type="n", xlim=xrange, ylim=yrange, cex.lab=mycex, main="Compact", cex.main=mycex)
+plot(compsamp$x, compsamp$y, asp=1, xlab="x (pc)", ylab="", type="n", xlim=xrange, ylim=yrange, cex.lab=mycex, main="Compact", cex.main=mycex, cex.axis=mycex)
 grid()
 with(compsamp, points(x,y, col=rgb(0,0,0,myalpha)))
-mtext(text = "y (pc)", side = 2, line = 3)
+mtext(text = "y (pc)", side = 2, line = 4, cex = 1.25)
 
-plot(avgsamp$x, avgsamp$y, asp=1, xlab="x (pc)", ylab="", type="n", xlim=xrange, ylim=yrange, cex.lab=mycex, main="Average", cex.main=mycex, axes=FALSE)
+plot(avgsamp$x, avgsamp$y, asp=1, xlab="x (pc)", ylab="", type="n", xlim=xrange, ylim=yrange, cex.lab=mycex, main="Average", cex.main=mycex, axes=FALSE, cex.axis=mycex)
 grid()
-axis(1)
+axis(1, cex.axis=mycex)
 box()
 with(avgsamp, points(x,y, col=rgb(0,0,0,myalpha)))
 
-plot(extsamp$x, extsamp$y, asp=1, xlab="x (pc)", ylab="", type="n", xlim=xrange, ylim=yrange, cex.lab=mycex, main="Extended", cex.main=mycex, axes=FALSE)
+plot(extsamp$x, extsamp$y, asp=1, xlab="x (pc)", ylab="", type="n", xlim=xrange, ylim=yrange, cex.lab=mycex, main="Extended", cex.main=mycex, axes=FALSE, cex.axis=mycex)
 grid()
-axis(1)
+axis(1, cex.axis=mycex)
 box()
 with(extsamp, points(x,y, col=rgb(0,0,0,myalpha)))
 
-plot(compsamp$r, compsamp$v, xlab = "r (pc)", ylab = "", cex.lab=mycex, type="n", xlim=rrange, ylim=vrange)
+plot(compsamp$r, compsamp$v, xlab = "r (pc)", ylab = "", cex.lab=mycex, type="n", xlim=rrange, ylim=vrange, cex.axis=mycex)
 grid()
 points(compsamp$r, compsamp$v, col=rgb(0,0,0,myalpha))
-mtext(text = "v (100km/s)", side = 2, line = 3)
+mtext(text = "v (100km/s)", side = 2, line = 4, cex = 1.25)
 
-plot(avgsamp$r, avgsamp$v, xlab = "r (pc)", ylab = "", cex.lab=mycex, type="n", xlim=rrange, ylim=vrange, axes=FALSE)
+plot(avgsamp$r, avgsamp$v, xlab = "r (pc)", ylab = "", cex.lab=mycex, type="n", xlim=rrange, ylim=vrange, axes=FALSE, cex.axis=mycex)
 grid()
-axis(1)
+axis(1, cex.axis=mycex)
 box()
 grid()
 points(avgsamp$r, avgsamp$v, col=rgb(0,0,0,myalpha))
 
-plot(extsamp$r, extsamp$v, xlab = "r (pc)", ylab = "", cex.lab=mycex, type="n", xlim=rrange, ylim=vrange, axes=FALSE)
+plot(extsamp$r, extsamp$v, xlab = "r (pc)", ylab = "", cex.lab=mycex, type="n", xlim=rrange, ylim=vrange, axes=FALSE, cex.axis=mycex)
 grid()
-axis(1)
+axis(1, cex.axis=mycex)
 box()
 points(extsamp$r, extsamp$v, col=rgb(0,0,0,myalpha))
 
