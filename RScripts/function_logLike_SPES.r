@@ -1,6 +1,19 @@
 library("reticulate")
 
-use_python("/usr/bin/python3")
+yoursystem <- Sys.info()["sysname"]
+
+if(yoursystem=="Windows"){
+  # if on my desktop, then use the virtual environment
+  use_condaenv("/Users/Gwen/miniconda3/envs/r-reticulate-GCs/") 
+}else{ if(yoursystem=="Linux"){
+  # if on my laptop, then use this version of Python
+  use_python("/usr/bin/python3")
+}else{
+  stop("It looks like you aren't using one of Gwen's computers. You'll need to set up your own virtual python environment with limepy installed in it, and then tell the R reticulate package where to find the environment. Good luck!")
+}
+}
+
+
 limepy <- import("limepy")
 
 
