@@ -1,17 +1,17 @@
 library(coda)
 library(Cairo)
 
-foldername = "RegenInsideCore"
-plottitle = "Average GCs, stars sampled inside core"
+foldername = "Regen_lowPhi0"
+plottitle = "Low phi0 GCs, stars randomly sampled"
 # if you want to set ranges explicitly
-grange = c(0, 3)
-Phi0range = c(1,9)
-Mrange = c(5000, 115000)
-rhrange  =c(0, 4) # need to change for each type of cluster if using this
+grange = c(1,2)
+Phi0range = c(1,4)
+Mrange = c(9e4, 1.1e5)
+rhrange  =c(2.6, 3.4) # need to change for each type of cluster if using this
 
 # plot 50% or 95%??
-# thisquant <- c("X25.", "X75.")
-thisquant <- c("X2.5.", "X97.5.")
+thisquant <- c("X25.", "X75.")
+# thisquant <- c("X2.5.", "X97.5.")
 
 mypath = paste0("../results/paper1results/", foldername, "/")
 
@@ -21,17 +21,28 @@ summarylist <- readRDS(paste0(mypath, summaryfilename))
 df <- summarylist$dfsummaries
 truepars <- summarylist$truepars
 
-# use this if you want to plot 50%
-gwithin <- summarylist$within[1]
-Phi0within <- summarylist$within[2]
-Mwithin <- summarylist$within[3]
-rwithin<- summarylist$within[4]
+# name depending on thisquant
+if( all(thisquant== c("X25.", "X75.")) ){
+  quantname = "50credint"
+  
+  # use this if you want to plot 50%
+  gwithin <- summarylist$within[1]
+  Phi0within <- summarylist$within[2]
+  Mwithin <- summarylist$within[3]
+  rwithin<- summarylist$within[4]
+  
+  }else{ # this is the default
+    
+  quantname = "95credint"
+  # use this if you want to plot 95%
+  gwithin <- summarylist$within95[1]
+  Phi0within <- summarylist$within95[2]
+  Mwithin <- summarylist$within95[3]
+  rwithin <- summarylist$within95[4]
+  
+}
 
-# use this if you want to plot 95%
-gwithin <- summarylist$within95[1]
-Phi0within <- summarylist$within95[2]
-Mwithin <- summarylist$within95[3]
-rwithin <- summarylist$within95[4]
+
 
 rm(summarylist)
 
@@ -57,7 +68,8 @@ xrange <- function(param, dframe=df, truep=truepars, interval = c("X25.", "X75."
 
 
 # pdf(paste0("../Figures/", foldername, "_limepy_subsamp500_interquartiles_", Sys.Date(), ".pdf"), width=9, height=7)
-png(paste0("../Figures/", foldername, "_limepy_subsamp500_95credint_", Sys.Date(), ".png"), width=9, height=7, units = "in", res=600)
+
+png(paste0("../Figures/", foldername, "_limepy_subsamp500_", quantname, "_", Sys.Date(), ".png"), width=9, height=7, units = "in", res=600)
 
 
 # set up plotting area
