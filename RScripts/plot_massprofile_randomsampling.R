@@ -5,6 +5,8 @@ source("function_logLike_LIMEPY.r")
 # we will plot the 13th file as an example for each case
 example = 13
 
+####### first plot the average, compact, and extended ##########
+
 # make a vector of the folders in the order that you want them plotted
 resultsfolders <- c("RegenAll/", "RegenCompact/", "RegenExtended/")
 
@@ -71,6 +73,61 @@ for(i in 1:length(resultsfolders)){
   lapply(X = results, FUN = function(X) lines(X$r, X$mass/1e5, col=postcol) )
   
   # abline(h=truepars[3]/1e5, col="darkgreen", lty=3, lwd=3)
+  
+  # calculate true model and add to plot true model mass profile
+  truemodel <- limepy$limepy(g=truepars[1], phi0=truepars[2], M=truepars[3], rh=truepars[4])
+  lines(truemodel$r, truemodel$mc/1e5, col="red", lwd=2)
+  
+}
+
+# turn off device
+dev.off()
+
+
+
+
+########### next plot the high Phi0 and low Phi0 results ######################
+
+# make a vector of the folders in the order that you want them plotted
+resultsfolders <- c("Regen_highPhi0/", "Regen_lowPhi0/")
+mockdatafolders <- c("Regen_highPhi0/subsamp500/", "Regen_lowPhi0/subsamp500/")
+# plot titles
+plotTitle <- c(expression("High"~Phi[0]), expression("Low"~Phi[0]))
+# set a character string vectors for the y-axes and x-axes
+Ylab = c(expression(M(r<R)~(10^5~M['\u2609'])), "")
+
+# open file to write to
+pdf(paste0("../Figures/massprofiles_diffPhi0_randomsampling_", Sys.Date(), ".pdf"), width = 5.3333, height = 3)
+
+# set up the outer margins, inner margins, grid, etc.
+par(mfrow=c(1,2), oma=c(0,1,3,3), mai=c(1,0.6,0,0))
+
+for(i in 1:length(resultsfolders)){
+  
+  # get ID for the GC
+  filename <- list.files(path = paste0("../mockdata/paper1data/", mockdatafolders[i]))[example]
+  ID <- strsplit(x = filename, split = ".rds")[[1]][1]
+  
+  # load the particular data set used
+  mydata <- readRDS(paste0("../mockdata/paper1data/", mockdatafolders[i], filename))
+  
+  # load the true parameter values
+  truepars <- readRDS(paste0("../results/paper1results/", resultsfolders[i], "truepars.rds"))
+  
+  # get the filename for the mass profiles from this GC
+  resultsfile <- list.files(path = paste0("../results/paper1results/", resultsfolders[i]), pattern = paste0("massprofiles_chain_limepy_", ID))
+  # load the mass profile posterior samples
+  results <- readRDS(paste0("../results/paper1results/", resultsfolders[i],  resultsfile))
+  
+  # make the plot!
+  plot(results[[1]]$r, results[[1]]$mass/1e5, xlab=Xlab, ylab=Ylab[i], xlim = xrange[[i]], ylim=yrange[[i]],  type="n", main="", las=1)
+  
+  grid()
+  
+  mtext(text = plotTitle[i], side = 3, line=1)
+  
+  # add all the different mass profiles from the posterior
+  lapply(X = results, FUN = function(X) lines(X$r, X$mass/1e5, col=postcol) )
   
   # calculate true model and add to plot true model mass profile
   truemodel <- limepy$limepy(g=truepars[1], phi0=truepars[2], M=truepars[3], rh=truepars[4])
