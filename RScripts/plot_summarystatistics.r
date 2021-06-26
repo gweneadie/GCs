@@ -2,16 +2,16 @@ library(coda)
 library(Cairo)
 
 foldername = "Regen_lowPhi0"
-plottitle = "Low phi0 GCs, stars randomly sampled"
+plottitle = "____ GCs, stars randomly sampled"
 # if you want to set ranges explicitly
 grange = c(1,2)
 Phi0range = c(1,4)
 Mrange = c(9e4, 1.1e5)
-rhrange  =c(2.6, 3.4) # need to change for each type of cluster if using this
+rhrange  =c(2, 4) # need to change for each type of cluster if using this
 
 # plot 50% or 95%??
-thisquant <- c("X25.", "X75.")
-# thisquant <- c("X2.5.", "X97.5.")
+# thisquant <- c("X25.", "X75.")
+thisquant <- c("X2.5.", "X97.5.")
 
 mypath = paste0("../results/paper1results/", foldername, "/")
 
@@ -69,7 +69,9 @@ xrange <- function(param, dframe=df, truep=truepars, interval = c("X25.", "X75."
 
 # pdf(paste0("../Figures/", foldername, "_limepy_subsamp500_interquartiles_", Sys.Date(), ".pdf"), width=9, height=7)
 
-png(paste0("../Figures/", foldername, "_limepy_subsamp500_", quantname, "_", Sys.Date(), ".png"), width=9, height=7, units = "in", res=600)
+windowsFonts(SolarSymbol = windowsFont("Arial Unicode MS"))
+
+pdf(paste0("../Figures/", foldername, "_limepy_subsamp500_", quantname, "_", Sys.Date(), ".pdf"), width=9, height=7, family="SolarSymbol")
 
 
 # set up plotting area
@@ -82,7 +84,17 @@ with(df, plot(Mean[Parameter=="g"], y, type="n", panel.first = TRUE, xlab = "g",
               # xlim = xrange(param="g",interval = thisquant), 
               xlim = grange,
               main = bquote(.(gwithin)/50) ))
-title(main = plottitle, outer = TRUE, line = -0.05)
+
+if( foldername=="Regen_highPhi0"){
+  title(expression("High"~Phi[0]~" GCs, stars randomly sampled"), outer = TRUE, line = -0.05)
+}else{
+  if( foldername=="Regen_lowPhi0" ){
+    title(expression("Low"~Phi[0]~" GCs, stars randomly sampled"), outer = TRUE, line = -0.05)
+  }else{
+    title(main = plottitle, outer = TRUE, line = -0.05)
+  }
+}
+
 axis(side = 2, at = y, labels=y)
 grid()
 abline(v=truepars["g"], col="blue")
@@ -106,7 +118,7 @@ quants(df, parameter="Phi_0", length=0.1, quantiles = thisquant)
 # M
 par(mar=c(5,2,2,2))
 
-with(df, plot(Mean[Parameter=="M"], y, type="n", panel.first = TRUE, xlab = expression(M[total]~(M['\u2609'])), cex.lab=xfactor, cex.axis=xfactor, ylab="",yaxt="n", xaxt="n", 
+with(df, plot(Mean[Parameter=="M"], y, type="n", panel.first = TRUE, xlab = expression(M[total]~(M["?"])), cex.lab=xfactor, cex.axis=xfactor, ylab="",yaxt="n", xaxt="n", 
               # xlim = xrange("M", interval = thisquant), 
               xlim = Mrange,
               main = bquote(.(Mwithin)/50)) )
