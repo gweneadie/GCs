@@ -9,7 +9,7 @@ folder <- "RegenCompact/"
 # look at the ith file
 i = 13
 
-filenamelist <- list.files(path = paste0("../results/paper1results/", folder), pattern = "chain")
+filenamelist <- list.files(path = paste0("../results/paper1results/", folder), pattern = "^chain")
 
 filename <- strsplit(filenamelist[i], split = ".rds")[[1]]
 
