@@ -58,4 +58,15 @@ massprofile <- function(pars){
   
 }
   
-
+velocityprofile <- function(pars){
+  
+  # for a set of parameter values, calculate the model, and then estimate the cumulative mass profile
+  
+  # calculate the limepy model
+  model <- limepy$limepy(g = pars[1], phi0 = pars[2], M = pars[3], rh = pars[4])
+  
+  nr <- length(model$r)
+  
+  data.frame(r=model$r, v2=model$v2)
+  
+}
