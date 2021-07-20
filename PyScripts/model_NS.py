@@ -7,7 +7,7 @@ import corner
 from matplotlib import pyplot as plt
 
 # do you wish to include anisotropic models?
-anisotropic = True
+anisotropic = False
 
 # MCMC parameters
 nlive = 500  # number of "live points"
@@ -15,7 +15,7 @@ dlogz = 0.01  # termination criterion
 min_eff = 20.  # minimum efficiency for first update
 
 # data to be loaded in
-fname = 'm5r3g1.5phi3.0a0.8'  # data file
+fname = 'm5r3g1.5phi3.0'  # data file
 logn = 2.7  # log of number of stars to read in
 
 # file paths

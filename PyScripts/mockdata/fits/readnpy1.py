@@ -1,9 +1,9 @@
 import numpy as np
 # save data
 
-with open('m5r3g1.5phi3.0_MCMC_2.7.npy', 'rb') as f:
+with open('m5r3g1.5phi3.0_IS_2.7.npy', 'rb') as f:
     theta_map = np.load(f)
-    theta_C = np.load(f)
+    C = np.load(f)
     samples = np.load(f)
     logq = np.load(f)
     logp = np.load(f)
