@@ -34,12 +34,12 @@ outermarginbottom <- c(rep("", 8), "r (pc)", "r (pc)")
 Ylab = expression(M(r<R)~(10^5~M["sun"]))
 Ylab = rep( c(Ylab, "") , 5)
 Xlab = rep("", 10)
-Ylabvel = c(expression(bar(v^2)), "", "", expression(bar(v^2)), "")
+Ylabvel = rep( c(expression(bar(v^2)), ""), 5)
 
 # set the y and x range for all plots
 yrange = list(c(0,1.5), c(0,1.5), c(0,1.5), c(0,1.5), c(0,1.5))
 xrange = list(c(0,7.5), c(0,20), c(0,45), c(0,40), c(c(0,12.5)))
-yrangevel = list(c(0,300), c(0,100),c(0,50), c(0,150), c(0,150))
+yrangevel = list(c(0,400), c(0,200),c(0,60), c(0,200), c(0,200))
 xrangevel = list( c(0,9), c(0,20), c(0,45), c(0,40), c(c(0,16)))
 
 # colour for profile
@@ -132,7 +132,7 @@ for(i in 1:length(resultsfolders)){
   
   # make the plot!
   plot(results[[1]]$r, results[[1]]$v2, 
-       xlab=Xlab, ylab=Ylabvel[i], 
+       xlab=Xlab, ylab=Ylabvel[i],
        xrangevel[[ceiling(i/2)]], ylim=yrangevel[[ceiling(i/2)]],
        type="n", main="", las=1)
   
@@ -160,82 +160,3 @@ for(i in 1:length(resultsfolders)){
 
 # turn off device
 dev.off()
-
-
-########## next plot the mass profiles for the cases when phi_0 changes ########
-
-# # plot the 15th file in this case
-# example = 15
-# 
-# resultsfolders <- c("Regen_highPhi0/subsamp500_outer/", "Regen_highPhi0/subsamp500_inner/",
-#                     "Regen_lowPhi0/subsamp500_outer/", "Regen_lowPhi0/subsamp500_inner/")
-# 
-# mockdatafolders <- resultsfolders
-# 
-# # labels for title, margins, axis margins
-# plotTitle <- c("Outside Core", "Inside Core","","")
-# outermarginleft <- c(expression("High"~Phi[0]), "", expression("Low"~Phi[0]), "")
-# outermarginbottom <- c(rep("", 2), "r (pc)", "r (pc)")
-# Ylab = expression(M(r<R)~(10^5~M['sun']))
-# Ylab = c(Ylab, "", Ylab, "")
-# 
-# yrange = list(c(0,1.5), c(0,1.5), c(0,1.5), c(0,1.5))
-# xrange = list(c(0,40), c(0,16))
-
-# # open file to write to
-# # png(filename = paste0("../Figures/massprofiles_diffPhi0_biasedsampling_", Sys.Date(), ".png"), res=300, width = 6, height = 4, units = "in")
-# pdf(file = paste0("../Figures/massprofiles_diffPhi0_biasedsampling_", Sys.Date(), ".pdf"), width = 6, height = 4)
-# 
-# # set up the outer margins, inner margins, grid, etc.
-# par(mfrow=c(2,2), oma=c(2,5,3,5), mai=c(0.5,0.6,0,0))
-# 
-# for(i in 1:length(resultsfolders)){
-#   
-#   # get ID for the GC
-#   filename <- list.files(path = paste0("../mockdata/paper1data/", mockdatafolders[i]))[example]
-#   ID <- strsplit(x = filename, split = ".rds")[[1]][1]
-#   
-#   # load the particular data set used
-#   mydata <- readRDS(paste0("../mockdata/paper1data/", mockdatafolders[i], filename))
-#   
-#   # load the true parameter values
-#   truepars <- readRDS(paste0("../results/paper1results/", resultsfolders[i], "truepars.rds"))
-#   
-#   # get the filename for the mass profiles from this GC
-#   resultsfile <- list.files(path = paste0("../results/paper1results/", resultsfolders[i]), pattern = paste0("massprofiles_chain_limepy_", ID))
-#   # load the mass profile posterior samples
-#   results <- readRDS(paste0("../results/paper1results/", resultsfolders[i],  resultsfile))
-#   
-#   if(i==3){browser()}
-#   
-#   # make the plot!
-#   plot(results[[1]]$r, results[[1]]$mass/1e5, xlab="", ylab=Ylab[i], xlim = xrange[[ceiling(i/2)]], ylim=yrange[[ceiling(i/2)]], type="n", main="", las=1)
-#   
-#   grid()
-#   
-#   mtext(text = outermarginleft[i], side = 2, line=5)
-#   mtext(text = outermarginbottom[i], side = 1, line=3, cex=0.75)
-#   mtext(text = plotTitle[i], side = 3, line=1)
-#   
-#   # add all the different mass profiles from the posterior
-#   # lapply(X = results, FUN = function(X) lines(X$r, X$mass/1e5, col=rgb(0,0,0,0.006)) )
-#   for(j in 1:length(results)){
-#     lines(results[[j]]$r, results[[j]]$mass/1e5, col=rgb(0,0,0,0.006))
-#   }
-#   
-#   # calculate true model and add to plot true model mass profile
-#   truemodel <- limepy$limepy(g=truepars[1], phi0=truepars[2], M=truepars[3], rh=truepars[4])
-#   
-#   # add curve of true model
-#   lines(truemodel$r, truemodel$mc/1e5, col="red", lwd=2)
-#   
-#   # if it's the upper-right plot, then add a legend
-#   if(i==2){
-#     legend("topright", legend = c("posterior profiles", "true profile"), col=c(postlegend, truecol), lty=1, lwd=2)
-#   }
-#   
-#   
-# }
-# 
-# dev.off()
-# 
