@@ -7,7 +7,7 @@ import corner
 from matplotlib import pyplot as plt
 
 # do you wish to include anisotropic models?
-anisotropic = True
+anisotropic = False
 
 # MCMC parameters
 chains = 100  # number of chains to run (this should be > N^2)
@@ -24,7 +24,11 @@ fout = 'fits/'  # location where fits will be stored
 
 # load data
 n = int(10**logn)  # number of stars to read in
-x, y, z, vx, vy, vz = np.loadtxt(fpath + fname + '.dat')[:n].T
+ntot = len(np.loadtxt(fpath + fname + '.dat'))
+np.random.seed(2021)  # fix random seed
+idxs = np.random.choice(ntot, size=n)
+x, y, z, vx, vy, vz = np.loadtxt(fpath + fname + '.dat')[idxs].T
+
 nparams = 4 + anisotropic
 
 # load importance sampling results
@@ -78,15 +82,8 @@ print('Final auto-correlation time estimates:', tau)
 samples = sampler.get_chain(discard=nburnin)
 logp = sampler.get_log_prob(discard=nburnin)
 
-# estimate scaling to account for difference in log-density
-scale = -np.log(np.sum([np.isfinite(logprior(s))
-                        for s in np.random.multivariate_normal(theta_map,
-                                                               theta_C,
-                                                               size=int(1e7))])
-                / 1e7)
-
 # compute IS proposal log-probability
-const = np.linalg.slogdet(2. * np.pi * theta_C)[1] + scale
+const = np.linalg.slogdet(2. * np.pi * theta_C)[1]
 Cinv = np.linalg.inv(theta_C)
 logq = -0.5 * np.array([(np.dot(np.dot((s - theta_map), Cinv), s - theta_map)
                          + const)

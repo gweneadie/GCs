@@ -7,7 +7,7 @@ import corner
 from matplotlib import pyplot as plt
 
 # do you wish to include anisotropic models?
-anisotropic = True
+anisotropic = False
 
 # MCMC parameters
 nlive = 500  # number of "live points"

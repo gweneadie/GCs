@@ -6,7 +6,7 @@ from scipy.optimize import minimize, differential_evolution
 import corner
 
 # do you wish to include anisotropic models?
-anisotropic = True
+anisotropic = False
 
 # do you want to use slower but more robust optimization?
 diff_evol = True
@@ -23,6 +23,9 @@ fout = 'fits/'  # location where fits will be stored
 n = int(10**logn)  # number of stars to read in
 x, y, z, vx, vy, vz = np.loadtxt(fpath + fname + '.dat')[:n].T
 nparams = 4 + anisotropic
+
+# scale factor to inflate the Normal proposal
+inflate = 2.5  # inflate std dev by this factor
 
 # define utility functions
 exec(open('PyScripts/utils.py').read())
