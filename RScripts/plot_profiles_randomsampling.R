@@ -179,6 +179,7 @@ for(i in 1:3){
   truemodel <- limepy$limepy(g=truepars[1], phi0=truepars[2], M=truepars[3], rh=truepars[4])
   lines(truemodel$r, truemodel$v2, col="red", lwd=2)
   
+  rug(mydata$r, col=rgb(0,0,0,0.05))
 }
 
 for(i in 4:length(resultsfolders)){
@@ -212,6 +213,7 @@ for(i in 4:length(resultsfolders)){
   truemodel <- limepy$limepy(g=truepars[1], phi0=truepars[2], M=truepars[3], rh=truepars[4])
   lines(truemodel$r, truemodel$v2, col="red", lwd=2)
   
+  rug(mydata$r, col=rgb(0,0,0,0.05))
 }
 
 # turn off device
