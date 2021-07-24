@@ -95,9 +95,8 @@ for(i in 1:length(resultsfolders)){
   
   # if it's the upper-right plot, then add a legend
   if(i==2){
-    legend("topright", legend = c("posterior profiles", "true profile"), col=c(postlegend, truecol), lty=1, lwd=2, cex = 0.75)
+    legend("topright", legend = c("posterior profiles", "true profile"), col=c(postlegend, truecol), lty=1, lwd=2, cex = 0.75, bg="white")
   }
-  
   
 }
 
@@ -149,9 +148,12 @@ for(i in 1:length(resultsfolders)){
   truemodel <- limepy$limepy(g=truepars[1], phi0=truepars[2], M=truepars[3], rh=truepars[4])
   lines(truemodel$r, truemodel$v2, col="red", lwd=2)
   
+  abline(v=1.5, col="lightblue", lty=2)
+  rug(mydata$r, col=rgb(0,0,0,0.05))
+  
   # if it's the upper-right plot, then add a legend
   if(i==2){
-    legend("topright", legend = c("posterior profiles", "true profile"), col=c(postlegend, truecol), lty=1, lwd=2, cex = 0.75)
+    legend("topright", legend = c("posterior profiles", "true profile", expression(r[cut])), col=c(postlegend, truecol, "lightblue"), lty=c(1,1,2), lwd=2, cex = 0.75, bg = "white")
   }
   
   
