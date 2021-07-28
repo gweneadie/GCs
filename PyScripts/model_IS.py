@@ -24,7 +24,7 @@ except NameError:  # if not, define them for the first time
     anisotropic = False
 
     # scale factor to inflate the Normal proposal
-    inflate = 2.5  # inflate std dev by this factor
+    inflate = 2.0  # inflate std dev by this factor
 
     # number of samples to save
     nsamps = 5000

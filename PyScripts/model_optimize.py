@@ -42,7 +42,7 @@ except NameError:  # if not, define them for the first time
     nparams = 4 + anisotropic
 
     # scale factor to inflate the Normal proposal
-    inflate = 2.5  # inflate std dev by this factor
+    inflate = 2.0  # inflate std dev by this factor
 
     # define utility functions
     exec(open('PyScripts/utils.py').read())
@@ -129,9 +129,10 @@ except:
 C = np.linalg.inv(H)
 for i in range(nparams):
     stddev = np.sqrt(C[i, i])  # marginal width of Gaussian
-    threshold = min([(bounds[i][1] - bounds[i][0]) / 4,  # quarter prior width
-                     abs(theta_map[i] - bounds[i][0]) / 2,  # half left edge
-                     abs(theta_map[i] - bounds[i][1]) / 2])  # half right edge
+    threshold = min([(bounds[i][1] - bounds[i][0]) / 2,  # prior width
+                     abs(theta_map[i] - bounds[i][0]),  # left edge
+                     abs(theta_map[i] - bounds[i][1])])  # right edge
+    threshold /= (1.5 * inflate)  # reduce by larger amount over inflate
     if stddev > threshold:
         # compute rescaling factor
         ratio = threshold / stddev

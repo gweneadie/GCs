@@ -3,7 +3,7 @@ import numpy as np
 # START OF INPUT ARGUMENTS #
 
 # do we want to rerun past results (i.e. overwrite files)?
-overwrite = False
+overwrite = True
 
 # do you wish to include anisotropic models?
 anisotropic = True
@@ -21,7 +21,7 @@ fout = 'fits/'  # location where fits will be stored
 diff_evol = True
 
 # scale factor to inflate the Normal proposal
-inflate = 2.5
+inflate = 2.0
 
 # IMPORTANCE SAMPLING
 # number of samples to save
