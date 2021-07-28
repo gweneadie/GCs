@@ -1,34 +1,51 @@
-import sys
-
-from limepy import limepy, sample, spes
 import numpy as np
 from scipy.optimize import minimize, differential_evolution
-import corner
 
-# do you wish to include anisotropic models?
-anisotropic = False
+# check if variables were previously defined
+try:  # if so, keep them the same
+    anisotropic
+    diff_evol
+    fname
+    logn
+    fpath
+    fout
+    n
+    ntot
+    idxs
+    x, y, z, vx, vy, vz
+    nparams
+    inflate
+except NameError:  # if not, define them for the first time
+    print("Initializing parameters...")
 
-# do you want to use slower but more robust optimization?
-diff_evol = True
+    # do you wish to include anisotropic models?
+    anisotropic = False
 
-# data to be loaded in
-fname = 'm5r3g1.5phi5.0'  # data file
-logn = 2.7  # log of number of stars to read in
+    # do you want to use slower but more robust optimization?
+    diff_evol = True
 
-# file paths
-fpath = 'mockdata/'  # location of data to be read in
-fout = 'fits/'  # location where fits will be stored
+    # data to be loaded in
+    fname = 'm5r3g1.5phi5.0'  # data file
+    logn = 2.7  # log of number of stars to read in
 
-# load data
-n = int(10**logn)  # number of stars to read in
-x, y, z, vx, vy, vz = np.loadtxt(fpath + fname + '.dat')[:n].T
-nparams = 4 + anisotropic
+    # file paths
+    fpath = 'mockdata/'  # location of data to be read in
+    fout = 'fits/'  # location where fits will be stored
 
-# scale factor to inflate the Normal proposal
-inflate = 2.5  # inflate std dev by this factor
+    # load data
+    n = int(10**logn)  # number of stars to read in
+    ntot = len(np.loadtxt(fpath + fname + '.dat'))
+    np.random.seed(2021)  # fix random seed
+    idxs = np.random.choice(ntot, size=n)
+    x, y, z, vx, vy, vz = np.loadtxt(fpath + fname + '.dat')[idxs].T
 
-# define utility functions
-exec(open('PyScripts/utils.py').read())
+    nparams = 4 + anisotropic
+
+    # scale factor to inflate the Normal proposal
+    inflate = 2.5  # inflate std dev by this factor
+
+    # define utility functions
+    exec(open('PyScripts/utils.py').read())
 
 # optimization
 if anisotropic:
@@ -112,7 +129,9 @@ except:
 C = np.linalg.inv(H)
 for i in range(nparams):
     stddev = np.sqrt(C[i, i])  # marginal width of Gaussian
-    threshold = (bounds[i][1] - bounds[i][0]) / 4  # half prior width
+    threshold = min([(bounds[i][1] - bounds[i][0]) / 4,  # quarter prior width
+                     abs(theta_map[i] - bounds[i][0]) / 2,  # half left edge
+                     abs(theta_map[i] - bounds[i][1]) / 2])  # half right edge
     if stddev > threshold:
         # compute rescaling factor
         ratio = threshold / stddev
@@ -122,14 +141,14 @@ for i in range(nparams):
 H = np.linalg.inv(C)
 
 # print final Hessian
-print(theta_map, H, C, logp)
+print(theta_map, H, C, np.sqrt(np.diag(C)), logp)
 
 # write out results
 if anisotropic:
-    fout = fpath + fout + fname + '_optim_{}_a.npy'.format(logn)
+    fopt = fpath + fout + fname + '_optim_{}_a.npy'.format(logn)
 else:
-    fout = fpath + fout + fname + '_optim_{}.npy'.format(logn)
-with open(fout, 'wb') as f:
+    fopt = fpath + fout + fname + '_optim_{}.npy'.format(logn)
+with open(fopt, 'wb') as f:
     np.save(f, theta_map)
     np.save(f, logp)
     np.save(f, H)

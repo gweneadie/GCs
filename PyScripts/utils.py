@@ -1,3 +1,14 @@
+from limepy import limepy
+import numpy as np
+
+try:
+    anisotropic
+    x, y, z, vx, vy, vz
+    nparams
+except:
+    raise ValueError("Required parameters are not defined.")
+
+
 # log-likelihood
 def loglike(theta):
     """
@@ -110,7 +121,7 @@ def logpost(theta):
 
 
 # negative log-posterior
-def neglogp(theta):
+def neglogp(theta, verbose=False):
     """
     Negative of the log-posterior function of the input parameters.
     Used for optimization.
@@ -118,7 +129,9 @@ def neglogp(theta):
     """
 
     lnp = logpost(theta)
-    print(theta, lnp)
+
+    if verbose:
+        print(theta, lnp)
 
     return -lnp
 

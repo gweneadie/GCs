@@ -1,35 +1,53 @@
-import sys
-
-from limepy import limepy, sample, spes
 import numpy as np
+from matplotlib import pyplot as plt
 import emcee
 import corner
-from matplotlib import pyplot as plt
 
-# do you wish to include anisotropic models?
-anisotropic = False
+# check if variables were previously defined
+try:  # if so, keep them the same
+    anisotropic
+    chains
+    nburnin
+    nsample
+    fname
+    logn
+    fpath
+    fout
+    n
+    ntot
+    idxs
+    x, y, z, vx, vy, vz
+    nparams
+except NameError:  # if not, define them for the first time
+    print("Initializing parameters...")
 
-# MCMC parameters
-chains = 100  # number of chains to run (this should be > N^2)
-nburnin = 200  # number of burn-in iterations
-nsample = 500  # number of iterations to save
+    # do you wish to include anisotropic models?
+    anisotropic = False
 
-# data to be loaded in
-fname = 'm5r3g1.5phi5.0'  # data file
-logn = 2.7  # log of number of stars to read in
+    # MCMC parameters
+    chains = 100  # number of chains to run (this should be > N^2)
+    nburnin = 200  # number of burn-in iterations
+    nsample = 500  # number of iterations to save
 
-# file paths
-fpath = 'mockdata/'  # location of data to be read in
-fout = 'fits/'  # location where fits will be stored
+    # data to be loaded in
+    fname = 'm5r3g1.5phi5.0'  # data file
+    logn = 2.7  # log of number of stars to read in
 
-# load data
-n = int(10**logn)  # number of stars to read in
-ntot = len(np.loadtxt(fpath + fname + '.dat'))
-np.random.seed(2021)  # fix random seed
-idxs = np.random.choice(ntot, size=n)
-x, y, z, vx, vy, vz = np.loadtxt(fpath + fname + '.dat')[idxs].T
+    # file paths
+    fpath = 'mockdata/'  # location of data to be read in
+    fout = 'fits/'  # location where fits will be stored
 
-nparams = 4 + anisotropic
+    # load data
+    n = int(10**logn)  # number of stars to read in
+    ntot = len(np.loadtxt(fpath + fname + '.dat'))
+    np.random.seed(2021)  # fix random seed
+    idxs = np.random.choice(ntot, size=n)
+    x, y, z, vx, vy, vz = np.loadtxt(fpath + fname + '.dat')[idxs].T
+
+    nparams = 4 + anisotropic
+
+    # define utility functions
+    exec(open('PyScripts/utils.py').read())
 
 # load importance sampling results
 if anisotropic:
@@ -42,9 +60,6 @@ with open(finit, 'rb') as f:
     theta_samps = np.load(f)
     theta_logq = np.load(f)
     theta_logp = np.load(f)
-
-# define utility functions
-exec(open('PyScripts/utils.py').read())
 
 # compute importance weights
 logwt = theta_logp - theta_logq  # log(importance weight)
@@ -101,6 +116,7 @@ with open(fsamps, 'wb') as f:
     np.save(f, samples)
     np.save(f, logq)
     np.save(f, logp)
+    np.save(f, tau)
 
 # define labels for cornerplots
 if anisotropic:

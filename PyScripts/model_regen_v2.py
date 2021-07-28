@@ -1,6 +1,4 @@
-import sys
-
-from limepy import limepy, sample, spes
+from limepy import limepy, sample
 import numpy as np
 
 # set number of models you wish to run

@@ -1,37 +1,53 @@
-import sys
-
-from limepy import limepy, sample, spes
 import numpy as np
-from scipy.optimize import minimize, differential_evolution
+from matplotlib import pyplot as plt
 import corner
 import dynesty
-from matplotlib import pyplot as plt
 
-# do you wish to include anisotropic models?
-anisotropic = False
+# check if variables were previously defined
+try:  # if so, keep them the same
+    anisotropic
+    inflate
+    nsamps
+    fname
+    logn
+    fpath
+    fout
+    n
+    ntot
+    idxs
+    x, y, z, vx, vy, vz
+    nparams
+except NameError:  # if not, define them for the first time
+    print("Initializing parameters...")
 
-# scale factor to inflate the Normal proposal
-inflate = 2.5  # inflate std dev by this factor
+    # do you wish to include anisotropic models?
+    anisotropic = False
 
-# number of samples to save
-nsamps = 5000
+    # scale factor to inflate the Normal proposal
+    inflate = 2.5  # inflate std dev by this factor
 
-# data to be loaded in
-fname = 'm5r3g1.5phi5.0'  # data file
-logn = 2.7  # log of number of stars to read in
+    # number of samples to save
+    nsamps = 5000
 
-# file paths
-fpath = 'mockdata/'  # location of data to be read in
-fout = 'fits/'  # location where fits will be stored
+    # data to be loaded in
+    fname = 'm5r3g1.5phi5.0'  # data file
+    logn = 2.7  # log of number of stars to read in
 
-# load data
-n = int(10**logn)  # number of stars to read in
-ntot = len(np.loadtxt(fpath + fname + '.dat'))
-np.random.seed(2021)  # fix random seed
-idxs = np.random.choice(ntot, size=n)
-x, y, z, vx, vy, vz = np.loadtxt(fpath + fname + '.dat')[idxs].T
+    # file paths
+    fpath = 'mockdata/'  # location of data to be read in
+    fout = 'fits/'  # location where fits will be stored
 
-nparams = 4 + anisotropic
+    # load data
+    n = int(10**logn)  # number of stars to read in
+    ntot = len(np.loadtxt(fpath + fname + '.dat'))
+    np.random.seed(2021)  # fix random seed
+    idxs = np.random.choice(ntot, size=n)
+    x, y, z, vx, vy, vz = np.loadtxt(fpath + fname + '.dat')[idxs].T
+
+    nparams = 4 + anisotropic
+
+    # define utility functions
+    exec(open('PyScripts/utils.py').read())
 
 # load optimized results
 if anisotropic:
@@ -42,9 +58,6 @@ with open(fopt, 'rb') as f:
     theta_map = np.load(f)
     theta_logp = np.load(f)
     theta_H = np.load(f)
-
-# define utility functions
-exec(open('PyScripts/utils.py').read())
 
 # generate precision/covariance matrix
 Cinv = theta_H / inflate**2

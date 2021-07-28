@@ -1,6 +1,4 @@
-import sys
-
-from limepy import limepy, sample, spes
+from limepy import limepy, sample
 import numpy as np
 
 # do you wish to randomize the dataset?

@@ -1,7 +1,7 @@
 import sys
 sys.path.append('/home/Gwenny/Documents/Work/Research/GCs/limepy/')
 
-from limepy import limepy,sample,spes
+from limepy import limepy, sample
 import numpy as np
 
 #Do you wish to randomize the dataset?
