@@ -60,7 +60,7 @@ massprofile <- function(pars){
   
 velocityprofile <- function(pars){
   
-  # for a set of parameter values, calculate the model, and then estimate the cumulative mass profile
+  # for a set of parameter values, calculate the model, and output a dataframe of the r and mean square velocity profile
   
   # calculate the limepy model
   model <- limepy$limepy(g = pars[1], phi0 = pars[2], M = pars[3], rh = pars[4])
