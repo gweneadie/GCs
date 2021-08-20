@@ -1,6 +1,9 @@
 ### Script to make a plot of three types of clusters
 
 set.seed(753)
+
+source("function_distancespeed.r")
+
 # filenames of compact, average, and extended GCs
 GCsIwant <- c("m5r1g1.5phi5.0", "m5r3g1.5phi5.0", "m5r9g1.5phi5.0", "/Regen_highPhi0/m5r3g1.5phi8.0_0", "/Regen_lowPhi0/m5r3g1.5phi2.0_0")
 xyznames <- c("x", "y", "z", "vx", "vy", "vz")
@@ -84,7 +87,7 @@ for(i in 1:3){
   
   if(i==1){  
     axis(2, cex.axis=mycex)
-    mtext(text = "v (100km/s)", side = 2, line = 4, cex = 1.25)
+    mtext(text = "v (km/s)", side = 2, line = 4, cex = 1.25)
   }
   
 }
@@ -122,7 +125,7 @@ for(i in c(5,2,4)){
   
   if(i==5){  
     axis(2, cex.axis=mycex)
-    mtext(text = "v (100km/s)", side = 2, line = 4, cex = 1.25)
+    mtext(text = "v (km/s)", side = 2, line = 4, cex = 1.25)
   }
   
 }
