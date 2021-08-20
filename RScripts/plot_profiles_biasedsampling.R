@@ -34,13 +34,14 @@ outermarginbottom <- c(rep("", 8), "r (pc)", "r (pc)")
 Ylab = expression(M(r<R)~(10^5~M["sun"]))
 Ylab = rep( c(Ylab, "") , 5)
 Xlab = rep("", 10)
-Ylabvel = rep( c(expression(bar(v^2)), ""), 5)
+Ylabvel = rep( c(expression(bar(v^2)~(km^2~s^-2), "")), 5)
 
 # set the y and x range for all plots
 yrange = list(c(0,1.5), c(0,1.5), c(0,1.5), c(0,1.5), c(0,1.5))
 xrange = list(c(0,7.5), c(0,20), c(0,45), c(0,40), c(c(0,12.5)))
-yrangevel = list(c(0,400), c(0,200),c(0,60), c(0,200), c(0,200))
-xrangevel = list( c(0,9), c(0,20), c(0,45), c(0,40), c(c(0,16)))
+# yrangevel = list(c(0,400), c(0,200),c(0,60), c(0,200), c(0,200))
+yrangevel = list(c(0,300), c(0,100),c(0,40), c(0,150), c(0,125))
+xrangevel = list( c(0,7.5), c(0,20), c(0,45), c(0,40), c(c(0,12.5)))
 
 # colour for profile
 truecol = "red"
