@@ -7,7 +7,7 @@ example = 13
 
 # set a character string vectors for the y-axes and x-axes
 Ylab = c(expression(M(r<R)~(10^5~M["sun"])), "", "", expression(M(r<R)~(10^5~M["sun"]), "") )
-Ylabvel = c(expression(bar(v^2)), "", "", expression(bar(v^2)), "")
+Ylabvel = c( expression( bar(v^2)~(km^2~s^-2), "" , "", bar(v^2)~(km^2~s^-2), ""))
 Xlab = "r (pc)"
 
 # set the x range for each type of GC
@@ -51,7 +51,7 @@ layout(mat = matrix(c(1,1,2,2,3,3,
                       0,4,4,5,5,0), nrow = 2, byrow = TRUE))
 
 # set up the outer margins, inner margins, grid, etc.
-par(oma=c(0,1,3,3), mai=c(1,0.6,0,0), cex.lab=myexp, cex.axis=myexp)
+par(oma=c(0,4,3,3), mai=c(1,0.75,0,0), cex.lab=myexp, cex.axis=myexp)
 
 # plot average, compact, and extended first
 for(i in 1:3){
@@ -136,12 +136,11 @@ dev.off()
 # open file to write to
 pdf(paste0("../Figures/velocityprofiles_randomsampling_", Sys.Date(), ".pdf"), width = 9, height = 7)
 
-# set up the outer margins, inner margins, grid, etc.
-par(oma=c(0,1,3,3), mai=c(1,0.6,0,0), cex.lab=myexp, cex.axis=myexp)
-
-
 layout(mat = matrix(c(1,1,2,2,3,3,
                       0,4,4,5,5,0), nrow = 2, byrow = TRUE))
+
+# set up the outer margins, inner margins, grid, etc.
+par(oma=c(2,3,3,3), mar=c(5,5,3,0), cex.lab=myexp, cex.axis=myexp)
 
 for(i in 1:3){
   
