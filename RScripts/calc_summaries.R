@@ -1,7 +1,7 @@
 # calculate summary statistics for all of the different analyses
 
 # get the files for the chains
-foldername = "Regen_highPhi0/"
+foldername = "ExtendedGC/subsamp500_outer/"
 mypath = paste0("../results/paper1results/", foldername)
 
 # get list of files
