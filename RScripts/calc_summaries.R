@@ -5,7 +5,7 @@ foldername = "ExtendedGC/subsamp500_outer/"
 mypath = paste0("../results/paper1results/", foldername)
 
 # get list of files
-chainfilelist <- list.files(mypath, pattern = "chain_limepy_subsamp500")
+chainfilelist <- list.files(mypath, pattern = "^chain_limepy_subsamp500")
 
 library(stringr)
 # grab the true parameter values from the file names (hack, sorry)
