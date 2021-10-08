@@ -81,3 +81,14 @@ splineprofile <- function(limepymodel, columns){
   out <- splinefun(x = limepymodel[, columns[1] ], y = limepymodel[, columns[2] ])
   
 }
+
+simplemassprofile <- function(pars){
+  
+  # given model parameters, calculate limepy model and use the mc returned from limepy to return a dataframe with r and cumulative mass
+  
+  model <- limepy$limepy(g = pars[1], phi0 = pars[2], M = pars[3], rh = pars[4])
+  
+  data.frame(r=model$r, mass=model$mc)
+  
+}
+
