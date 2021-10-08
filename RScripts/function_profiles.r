@@ -70,3 +70,14 @@ velocityprofile <- function(pars){
   data.frame(r=model$r, v2=model$v2)
   
 }
+
+
+splineprofile <- function(limepymodel, columns){
+  
+  # function that is passed a limepy model profile (e.g., mass or velocity profile), then fits a spline to the data and returns the spline function so that the value at any r can be calculated
+  # limepymodel = estimate of profile (data frame)
+  # columns = a vector of columns (numbers or character names) you want to use to fit the spline. The first item should be the x value, and the second the y value
+  
+  out <- splinefun(x = limepymodel[, columns[1] ], y = limepymodel[, columns[2] ])
+  
+}
