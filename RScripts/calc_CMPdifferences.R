@@ -94,12 +94,14 @@ for(i in 1:length(resultsfolders)){
   # add the true profile
   lines(truemodel$r, truemodel$mc, col="red", lwd=2)
   
-  plot(diffCMPs[[i]]$r, diffCMPs[[i]]$diffs, col=rgb(0,0,0.3, 0.3), ylim=c(-0.2, 0.1))
+  plot(diffCMPs[[i]]$r, diffCMPs[[i]]$diffs, col=rgb(0,0,0.3, 0.3), type="l")
   for(j in 2:50){
-    points(diffCMPs[[j]]$r, diffCMPs[[j]]$diffs, col=rgb(0,0,0.3, 0.3))
+    lines(diffCMPs[[j]]$r, diffCMPs[[j]]$diffs, col=rgb(0,0,0.3, 0.3))
   }
   abline(h=0, col="red")
   # make figure of 
+  lines(rseq, diffStats$xbar)
+  with(diffStats, errbar(rseq, xbar, yplus=(se + xbar), yminus=(xbar-se), add=TRUE))
   
 }
 
