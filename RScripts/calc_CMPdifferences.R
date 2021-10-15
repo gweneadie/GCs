@@ -75,14 +75,14 @@ for(i in 1:length(resultsfolders)){
   ############# still not working properly, need to check
   
   # calculate difference between true CMP and mean CMP, save values
-  diffCMPs <- lapply( CMPs, FUN = function(x) data.frame(r=x$r, diffs=(x$mass - truemass)) )
+  diffCMPs <- lapply(CMPs, FUN = function(x) data.frame(r=x$r, diffs=(x$mass - truemass)) )
   
   # put all the diffs into a single dataframe so the r values match up
   temp <- bind_cols(diffCMPs)  
   # grab all columns with differences
   temp <- temp %>% dplyr:: select(starts_with("diff")) 
   # calculate stats of difference across rows (i.e., at each r)
-  diffStats <- data.frame(xbar=rowMeans(x = temp), se=rowSds(as.matrix(temp)))
+  diffStats <- data.frame(xbar=rowMeans(x = temp), se=rowSds(as.matrix(temp))/sqrt(50))
   
   ###################
   
