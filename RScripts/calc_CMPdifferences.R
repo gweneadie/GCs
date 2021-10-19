@@ -13,8 +13,8 @@ resultsfolders <- c("RegenAll/", "RegenOutsideCore/", "RegenInsideCore/",
                     "Regen_highPhi0/", "Regen_highPhi0/subsamp500_outer/", "Regen_highPhi0/subsamp500_inner/",
                     "Regen_lowPhi0/", "Regen_lowPhi0/subsamp500_outer/", "Regen_lowPhi0/subsamp500_inner/")
 
-# 95% quantile
-thisquant <- c("X2.5.", "X97.5.")
+# what quantiles do you want
+thisquant <- c(0.025, 0.975) # 95%
 
 
 # sequence of r values for calculations and plotting
@@ -75,7 +75,7 @@ for(i in 1:length(resultsfolders)){
   temp <- temp %>% dplyr:: select(starts_with("diff")) 
   
   # lower and upper 95% ci
-  ci95 <- t( apply(X = as.matrix(temp), MARGIN = 1, FUN = function(x) quantile(x, probs=c(0.025,0.975))) )
+  ci95 <- t( apply(X = as.matrix(temp), MARGIN = 1, FUN = function(x) quantile(x, probs=thisquant)) )
   
   # calculate stats of difference across rows (i.e., at each r)
   diffStats <- data.frame(xbar=rowMeans(x = temp), ci95lower = ci95[, 1], ci95higher = ci95[, 2])
@@ -84,6 +84,7 @@ for(i in 1:length(resultsfolders)){
   
   # save everything as a list
   everything <- list(diffStats, diffCMPs)
+  names(everything) = c("diffStats", "diffCMPs")
   
   # save object
   saveRDS(everything,file = paste0("../results/paper1results/", resultsfolders[i], "CMPdifferences_", Sys.Date(), ".rds" ) )
