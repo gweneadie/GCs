@@ -13,13 +13,6 @@ resultsfolders <- c("RegenAll/", "RegenOutsideCore/", "RegenInsideCore/",
                     "Regen_highPhi0/", "Regen_highPhi0/subsamp500_outer/", "Regen_highPhi0/subsamp500_inner/",
                     "Regen_lowPhi0/", "Regen_lowPhi0/subsamp500_outer/", "Regen_lowPhi0/subsamp500_inner/")
 
-mockdatafolders <- c("RegenAll/subsamp500_random/", "RegenAll/subsamp500_outsidecore/", "RegenAll/subsamp500_insidecore/",
-                     "CompactGC/subsamp500/", "CompactGC/subsamp500_outer/", "CompactGC/subsamp500_inner/",
-                     "ExtendedGC/subsamp500/", "ExtendedGC/subsamp500_outer/", "ExtendedGC/subsamp500_inner/",
-                     "Regen_highPhi0/subsamp500/", "Regen_highPhi0/subsamp500_outer/", "Regen_highPhi0/subsamp500_inner/",
-                     "Regen_lowPhi0/subsamp500/", "Regen_lowPhi0/subsamp500_outer/", "Regen_lowPhi0/subsamp500_inner/")
-
-
 # 95% quantile
 thisquant <- c("X2.5.", "X97.5.")
 
@@ -86,8 +79,14 @@ for(i in 1:length(resultsfolders)){
   
   # calculate stats of difference across rows (i.e., at each r)
   diffStats <- data.frame(xbar=rowMeans(x = temp), ci95lower = ci95[, 1], ci95higher = ci95[, 2])
+  # add a column for the r values
+  diffStats$rseq <- rseq
   
+  # save everything as a list
+  everything <- list(diffStats, diffCMPs)
   
+  # save object
+  saveRDS(everything,file = paste0("../results/paper1results/", resultsfolders[i], "CMPdifferences_", Sys.Date(), ".rds" ) )
 
 }
 
