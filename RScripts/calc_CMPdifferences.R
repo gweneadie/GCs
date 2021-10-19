@@ -4,6 +4,7 @@ source("function_profiles.r")
 
 library(dplyr)
 library(matrixStats)
+library(Hmisc)
 
 # make a vector of the folders in the order that you want them plotted
 resultsfolders <- c("RegenAll/", "RegenOutsideCore/", "RegenInsideCore/",
@@ -72,8 +73,6 @@ for(i in 1:length(resultsfolders)){
   CMPs <- lapply(funCMPs, FUN = function(x) data.frame(r=rseq, mass=x(rseq)))
   truemass <- funtrue(rseq)
   
-  ############# still not working properly, need to check
-  
   # calculate difference between true CMP and mean CMP, save values
   diffCMPs <- lapply(CMPs, FUN = function(x) data.frame(r=x$r, diffs=(x$mass - truemass)) )
   
@@ -81,29 +80,36 @@ for(i in 1:length(resultsfolders)){
   temp <- bind_cols(diffCMPs)  
   # grab all columns with differences
   temp <- temp %>% dplyr:: select(starts_with("diff")) 
+  
+  # lower and upper 95% ci
+  ci95 <- t( apply(X = as.matrix(temp), MARGIN = 1, FUN = function(x) quantile(x, probs=c(0.025,0.975))) )
+  
   # calculate stats of difference across rows (i.e., at each r)
-  diffStats <- data.frame(xbar=rowMeans(x = temp), se=rowSds(as.matrix(temp))/sqrt(50))
+  diffStats <- data.frame(xbar=rowMeans(x = temp), ci95lower = ci95[, 1], ci95higher = ci95[, 2])
   
-  ###################
   
-  # plot the estimated CMPs
-  plot(estimates[[i]]$r, estimates[[i]]$mass, ylim=c(0,1.2), type="l", col=rgb(0,0,0.3, 0.3))
-  for(j in 2:50){
-    lines(estimates[[j]]$r, estimates[[j]]$mass, col=rgb(0,0,0.3, 0.3))
-  }
-  # add the true profile
-  lines(truemodel$r, truemodel$mc, col="red", lwd=2)
-  
-  plot(diffCMPs[[i]]$r, diffCMPs[[i]]$diffs, col=rgb(0,0,0.3, 0.3), type="l")
-  for(j in 2:50){
-    lines(diffCMPs[[j]]$r, diffCMPs[[j]]$diffs, col=rgb(0,0,0.3, 0.3))
-  }
-  abline(h=0, col="red")
-  # make figure of 
-  lines(rseq, diffStats$xbar)
-  with(diffStats, errbar(rseq, xbar, yplus=(se + xbar), yminus=(xbar-se), add=TRUE))
-  
+
 }
 
+# plot the estimated CMPs
+# plot(estimates[[i]]$r, estimates[[i]]$mass, ylim=c(0,1.2), type="l", col=rgb(0,0,0.3, 0.3))
+# for(j in 2:50){
+#   lines(estimates[[j]]$r, estimates[[j]]$mass, col=rgb(0,0,0.3, 0.3))
+# }
+# # add the true profile
+# lines(truemodel$r, truemodel$mc, col="red", lwd=2)
 
+# 
+# plot(diffCMPs[[i]]$r, diffCMPs[[i]]$diffs, 
+#      col=rgb(0,0,0.3, 0.3), type="l", 
+#      ylim=range(diffStats),
+#      ylab=expression(M[true](r)-M[estimated](r))
+#      )
+# polygon(x = c(rseq, rev(rseq)), y = c(diffStats$ci95lower, rev(diffStats$ci95higher)), col=rgb(0,0.4,0.7, alpha = 0.25), border = NA )
+# # make figure of xbar
+# lines(rseq, diffStats$xbar)
+# for(j in 2:50){
+#   lines(diffCMPs[[j]]$r, diffCMPs[[j]]$diffs, col=rgb(0,0,0.3, 0.3))
+# }
+# abline(h=0, lty=2)
 
