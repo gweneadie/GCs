@@ -26,7 +26,8 @@ xrange = list(c(0,7.5), c(0.0,20), c(0,42), c(0,40), c(c(0,12.5)))
 # expansion factor for labels
 myexp = 1.35
 
-
+# region colour
+regcol = rgb(0,0.2,0.6, alpha=0.3)
 
 ########### plot the unbiased results #####################
 # create a plotting grid that is 2x6, and make each plot take up 2 cells, so we can have 3 plots in the first row and 2 plots in the second row.
@@ -39,8 +40,7 @@ layout(mat = matrix(c(1,1,2,2,3,3,
 # set up the outer margins, inner margins, grid, etc.
 par(oma=c(0,4,3,3), mai=c(1,0.75,0,0), cex.lab=myexp, cex.axis=myexp)
 
-# region colour
-regcol = rgb(0,0.2,0.7, alpha=0.3)
+
 
 
 for(i in 1:length(resultsfoldersRandom)){
@@ -123,7 +123,7 @@ for(i in 1:length(resultsfoldersBiased)){
 
   plot(diffCMPs[[i]]$r, diffCMPs[[i]]$diffs, 
        col=rgb(0,0,0.3, 0.3), type="l", 
-       ylim=yplotlims[[i]], 
+       ylim=yplotlims[[i]]*1.4, 
        xlim = xrange[[ceiling(i/2)]],
        ylab=Ylab[i], xlab=Xlab)
   
@@ -137,7 +137,37 @@ for(i in 1:length(resultsfoldersBiased)){
   if(!is.finite(indexx)){ indexx <- length(rseq) }
   
   # show 95% confidence interval on mean differences
-  with(diffStats, polygon(x = c(rseq[1:indexx],rev(rseq[1:indexx])), y = c(ci95lower[1:indexx],rev(ci95higher[1:indexx])),col= regcol, border=NA))
+  if(is.odd(i)){
+    with(diffStats, polygon(x = c(rseq[1:indexx],rev(rseq[1:indexx])), y = c(ci95lower[1:indexx],rev(ci95higher[1:indexx])),col= regcol, border=NA))
+  }
+
+  # for inside core, most outside of plotting area will break polygon, this is fix
+  if(is.even(i)){
+    maxylower <- par("usr")[3]
+    maxyupper <- par("usr")[4]
+    
+    temppoly <- diffStats[1:indexx, ]
+    
+    indexylower <- max(which(temppoly$ci95lower>maxylower))+1
+    
+    firstcurvex <- temppoly$rseq[1:indexylower]
+    corner1x <- temppoly$rseq[indexylower]
+    corner2x <- temppoly$rseq[indexx]
+    corner3x <- temppoly$rseq[indexx]
+    lastcurvex <- rev(temppoly$rseq[1:indexx])
+    
+    firstcurvey <- temppoly$ci95lower[1:indexylower]
+    corner1y <- temppoly$ci95lower[indexylower]
+    corner2y <- temppoly$ci95lower[indexylower]
+    corner3y <- temppoly$ci95higher[indexx]
+    lastcurvey <- rev(temppoly$ci95higher[1:indexx])
+    
+    # show 95% confidence interval on mean differences
+    with(temppoly, 
+         polygon(x = c(firstcurvex, corner1x, corner2x, corner3x, lastcurvex),
+                 y = c(firstcurvey, corner1y, corner2y, corner3y, lastcurvey),
+                 col= regcol, border=NA))
+  }
   
   # make figure of xbar
   # lines(diffStats$rseq, diffStats$xbar)
@@ -149,5 +179,6 @@ for(i in 1:length(resultsfoldersBiased)){
 
   
 dev.off()
-}
+
+
 
