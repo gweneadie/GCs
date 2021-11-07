@@ -16,7 +16,7 @@ regions=c(0.5, 0.75, 0.95)
 drop.perc = (1 - regions)/2
 
 # colours for credible region bounds and true mass profile
-solids = c("cadetblue4", "cadetblue3", "cadetblue1")
+solids = c("cadetblue1", "cadetblue3", "cadetblue4")
 truecol = "red"
 
 # labels for plots and legends
@@ -44,7 +44,7 @@ resultsfoldersBiased <- c("CompactGC/subsamp500_outer/", "CompactGC/subsamp500_i
 
 
 
-png(filename = paste0("../Figures/CMPs_randomsampling_", Sys.Date(), ".png"), width = 9, height = 7, units = "in", res = 300)
+png(filename = paste0("../Figures/CMPs_randomsampling_", Sys.Date(), ".png"), res=300, width = 9.5, height = 7, units = "in")
 
 layout(mat = matrix(c(1,1,2,2,3,3,
                       0,4,4,5,5,0), nrow = 2, byrow = TRUE))
@@ -58,22 +58,19 @@ for(i in 1:length(resultsfoldersRandom)){
   foldername = resultsfoldersRandom[i]
   mypath = paste0("../results/paper1results/", foldername)
  
-  # get list of chain files and grab jth one
-  filename <- list.files(path =mypath, pattern = "^chain")[j]
-  # load file
-  allchaininfo <- readRDS(paste0(mypath, filename))
-  chain <- allchaininfo$chain
-  # convert mass to 10^5
-  chain[, "M"] <- chain[, "M"]/10^5
-  
-  # use every 10th row to calculate CMP
-  chain <- chain[seq(from=1, to=nrow(chain), by=10), ]
-  
+  # load file that contains all mass profiles from chains and limepy
+  filename <- list.files(path = mypath, pattern = "^massprofile")
+
+  allmassprofiles <- readRDS(paste0(mypath, filename))
+
   # calculate Bayesian credible regions
-  temp = CMPcredreg(chain = chain, r.values = rseq[[i]])
+  temp = CMPcredreg(CMPs = allmassprofiles, r.values = rseq[[i]])
+  # change to units of 10^5 Msun
+  temp = temp/1e5
   
-  lower.creds <- temp[[1]]
-  upper.creds <- temp[[2]]
+  # split into lower and upper creds
+  lower.creds <- temp[, 1:(ncol(temp)/2)]
+  upper.creds <- temp[, rev((ncol(temp)/2+1):ncol(temp)) ] #put in reverse so columns line up properly with lower.creds
   
   # load the true parameter values
   truepars <- readRDS(paste0("../results/paper1results/", resultsfoldersRandom[i], "truepars.rds"))
@@ -94,14 +91,16 @@ for(i in 1:length(resultsfoldersRandom)){
   Ms = rep(0, length(rseq[[i]]))
   
   p = plot(rseq[[i]], (Ms), type="n",
-           xlab = myxlab, ylab=myylab[i], main = plotTitle[i],
+           xlab = myxlab, ylab=myylab[i], main = "",
            ylim=c(0,1.5),
            xlim=xrangeplot[[i]], cex.lab=myexp)
   #add a background grid
   grid()
   
+  mtext(text = plotTitle[i], side = 3, line=1)
+  
   # add credible regions
-  for( j in length(regions):1 ){
+  for( j in 1:length(regions) ){
     polygon(x=rs, y=polyM[,j], col=solids[j], border=solids[j]) 
   }
   grid()
