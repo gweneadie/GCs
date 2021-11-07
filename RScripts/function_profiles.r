@@ -93,34 +93,23 @@ simplemassprofile <- function(pars){
 }
 
 
-
-CMPcredreg <- function( chain, r.values, regions=c(0.5, 0.75, 0.95), ...){
-  ######## function to calculate credible regions for a cumulative mass profile
-  # returns a list of lower and upper credible regions, with 50%, 75%, and 95% cred regions being the default
+CMPcredreg <- function(CMPs, r.values, regions=c(0.5,0.75,0.95)){
   
   # credible region bounds
-  drop.perc = (1 - regions)/2
-  
-  # for every 10th set of parameter values in chain, calculate the mass profile
-  CMPs <- apply(X = chain, MARGIN = 1, FUN = simplemassprofile)
+  forquantilefun = sort(c((1 - regions)/2, regions+(1 - regions)/2))
   
   # for every profile estimate, create a spline function for the CMP so we can calculate at any M(r), because limepy doesn't have this flexibility
   funCMPs <- lapply(X = CMPs, FUN = splineprofile, columns=c("r", "mass"))
   
   # get estimates at custom r values
-  customCMPs <- t(sapply(funCMPs, FUN = function(x) x(r.values)))
-  colnames(customCMPs) = paste( "r", seq(1,length(r.values)), sep="")
+  customCMPs <- lapply(funCMPs, FUN = function(x) x(r.values))
   
-  # sort the M(r) values
-  sorted.Mr = apply(X=customCMPs, MARGIN=2, FUN=sort)
+  # put all custom CMPs into one matrix
+  temp <- matrix(unlist(customCMPs), ncol = length(r.values), byrow=TRUE)
   
-  lower.creds = sapply( X=drop.perc, FUN=function(x) ( sorted.Mr[ -( 1:(x*nrow(sorted.Mr)) ) , ] )[1, ] )
-  colnames(lower.creds) = as.character(100*regions)
+  # at every r value, get the quantiles
+  out <- t(apply(X = temp, MARGIN = 2, FUN = quantile, probs = forquantilefun))
   
-  upper.creds = apply( X=cbind( drop.perc, regions ), MARGIN=1,
-                       FUN=function(x) ( sorted.Mr[ -( 1:( sum(x) * nrow( sorted.Mr ) ) ), ] )[1, ] )
-  colnames(upper.creds) = colnames(lower.creds)
-  
-  list(lowercreds=lower.creds, uppercreds=upper.creds)
+  out
   
 }
