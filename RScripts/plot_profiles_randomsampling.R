@@ -24,7 +24,7 @@ meancol = "lightblue"
 # true total mass
 truetotalcol = "darkgreen"
 # colour for posterior mass profiles
-postcol = rgb(0,0,0,0.006)
+postcol = rgb(0,0,0,0.003)
 postlegend = "black"
 
 # expansion factor for labels
@@ -42,9 +42,9 @@ mockdatafolders <- c("RegenAll/subsamp500_random/", "CompactGC/subsamp500/", "Ex
 ####### 1. Plot MASS PROFILES for Average, Compact, Extended, High Phi0 and Low Phi0 #######
 
 # open file to write to
-# png(filename = paste0("../Figures/massprofiles_randomsampling", Sys.Date(), ".png"), res=300, width = 8, height = 3, units = "in")
+png(filename = paste0("../Figures/massprofiles_randomsampling", Sys.Date(), ".png"), res=300, width = 9.5, height = 7, units = "in")
 
-pdf(paste0("../Figures/massprofiles_randomsampling", Sys.Date(), ".pdf"), width = 9, height = 7)
+# pdf(paste0("../Figures/massprofiles_randomsampling", Sys.Date(), ".pdf"), width = 9, height = 7)
 
 # create a plotting grid that is 2x6, and make each plot take up 2 cells, so we can have 3 plots in the first row and 2 plots in the second row.
 layout(mat = matrix(c(1,1,2,2,3,3,
