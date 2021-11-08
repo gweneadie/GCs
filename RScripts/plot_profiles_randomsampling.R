@@ -24,7 +24,7 @@ meancol = "lightblue"
 # true total mass
 truetotalcol = "darkgreen"
 # colour for posterior mass profiles
-postcol = rgb(0,0,0,0.003)
+postcol = rgb(0,0,0,0.006)
 postlegend = "black"
 
 # expansion factor for labels
@@ -134,7 +134,9 @@ dev.off()
 ####### 2. Plot VELOCITY PROFILES for Average, Compact, Extended, High Phi0 and Low Phi0 #######
 
 # open file to write to
-pdf(paste0("../Figures/velocityprofiles_randomsampling_", Sys.Date(), ".pdf"), width = 9, height = 7)
+# pdf(paste0("../Figures/velocityprofiles_randomsampling_", Sys.Date(), ".pdf"), width = 9, height = 7)
+
+png(paste0("../Figures/velocityprofiles_randomsampling_", Sys.Date(), ".pdf"), width = 9.5, height = 7, res=300, units = "in")
 
 layout(mat = matrix(c(1,1,2,2,3,3,
                       0,4,4,5,5,0), nrow = 2, byrow = TRUE))
