@@ -52,7 +52,9 @@ postlegend = "black"
 
 ########## plot the mass profiles for different r_h and Phi_0 #########
 # open file to write to
-pdf(paste0("../Figures/massprofiles_biasedsampling", Sys.Date(), ".pdf"), width = 6, height = 8)
+# pdf(paste0("../Figures/massprofiles_biasedsampling", Sys.Date(), ".pdf"), width = 6, height = 8)
+
+png(filename = paste0("../Figures/massprofiles_biasedsampling", Sys.Date(), ".png"), res=300, width = 6, height = 8, units = "in")
 
 # set up the outer margins, inner margins, grid, etc.
 par(mfrow=c(5,2), oma=c(2,5,3,5), mai=c(0.5,0.6,0,0))
@@ -61,7 +63,7 @@ for(i in 1:length(resultsfolders)){
   
   # get ID for the GC
   filename <- list.files(path = paste0("../mockdata/paper1data/", mockdatafolders[i]))[example]
-  ID <- strsplit(x = filename, split = ".rds")[[1]][1]
+  # ID <- strsplit(x = filename, split = ".rds")[[1]][1]
   
   # load the particular data set used
   mydata <- readRDS(paste0("../mockdata/paper1data/", mockdatafolders[i], filename))
@@ -70,7 +72,7 @@ for(i in 1:length(resultsfolders)){
   truepars <- readRDS(paste0("../results/paper1results/", resultsfolders[i], "truepars.rds"))
   
   # get the filename for the mass profiles from this GC
-  resultsfile <- list.files(path = paste0("../results/paper1results/", resultsfolders[i]), pattern = paste0("massprofiles_chain_limepy_", ID))
+  resultsfile <- list.files(path = paste0("../results/paper1results/", resultsfolders[i]), pattern = paste0("massprofiles_chain_limepy_"))
   # load the mass profile posterior samples
   results <- readRDS(paste0("../results/paper1results/", resultsfolders[i],  resultsfile))
   
@@ -109,7 +111,10 @@ dev.off()
 ########## plot the mean square VELOCITY profiles for different r_h and Phi_0 #######
 
 # open file to write to
-pdf(paste0("../Figures/velocityprofiles_biasedsampling_", Sys.Date(), ".pdf"), width = 6, height = 8)
+# pdf(paste0("../Figures/velocityprofiles_biasedsampling_", Sys.Date(), ".pdf"), width = 6, height = 8)
+
+png(filename = paste0("../Figures/velocityprofiles_biasedsampling", Sys.Date(), ".png"), res=300, width = 9.5, height = 7, units = "in")
+
 # set up the outer margins, inner margins, grid, etc.
 par(mfrow=c(5,2), oma=c(2,5,3,5), mai=c(0.5,0.6,0,0))
 
