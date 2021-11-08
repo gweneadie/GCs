@@ -27,8 +27,8 @@ thisone = 9
 rseq = lseq(from = xrange[[5]][1]+1, to = xrange[[5]][2], length.out=10)
 
 # grab folder name and path
-# foldername = resultsfoldersRandom[thisone]
-foldername = resultsfoldersBiased[thisone]
+foldername = resultsfoldersRandom[thisone]
+# foldername = resultsfoldersBiased[thisone]
 
 mypath = paste0("../results/paper1results/", foldername)
 
@@ -54,7 +54,7 @@ for(j in 1:length(filename)){
   temp = CMPcredreg(chain = chain, r.values = rseq, regions = 0.95)
   
   # load the true parameter values
-  truepars <- readRDS(paste0("../results/paper1results/", resultsfoldersBiased[thisone], "truepars.rds"))
+  truepars <- readRDS(paste0("../results/paper1results/", resultsfoldersRandom[thisone], "truepars.rds"))
   # convert mass to units of 10^5
   truepars["M"] <- truepars["M"]/1e5
   
