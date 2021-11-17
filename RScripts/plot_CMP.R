@@ -43,6 +43,11 @@ resultsfoldersBiased <- c("CompactGC/subsamp500_outer/", "CompactGC/subsamp500_i
                           "Regen_lowPhi0/subsamp500_outer/", "Regen_lowPhi0/subsamp500_inner/")
 
 
+mockdatafolders <- c("RegenAll/subsamp500_random/", 
+                     "CompactGC/subsamp500/", 
+                     "ExtendedGC/subsamp500/",
+                     "Regen_highPhi0/subsamp500/",
+                     "Regen_lowPhi0/subsamp500/")
 
 png(filename = paste0("../Figures/CMPs_randomsampling_", Sys.Date(), ".png"), res=300, width = 9.5, height = 7, units = "in")
 
@@ -100,15 +105,24 @@ for(i in 1:length(resultsfoldersRandom)){
   mtext(text = plotTitle[i], side = 3, line=1)
   
   # add credible regions
-  for( j in 1:length(regions) ){
-    polygon(x=rs, y=polyM[,j], col=solids[j], border=solids[j]) 
+  for( k in 1:length(regions) ){
+    polygon(x=rs, y=polyM[,k], col=solids[k], border=solids[k]) 
   }
   grid()
-  lines(truemodel$r, truemodel$mc/1e5, col=truecol, lwd=1.5)
+  # lines(truemodel$r, truemodel$mc/1e5, col=truecol, lwd=1.5)
+  
+  # add an empirical cdf of the stars in r
+  # load the particular data set used
+  datafilename <- list.files(paste0("../mockdata/paper1data/", mockdatafolders[i]))[j]
+  
+  mydata <- readRDS(paste0("../mockdata/paper1data/", mockdatafolders[i], datafilename))
+  
+  # add a line showing the cumulative fraction of stars
+  lines(ecdf(mydata$r), col="black", do.points=FALSE)
   
   # if it's the last plot, then add a legend
   if(i==1){
-    legend("topright", legend = c(mylegend, "true profile"), col=c(solids, truecol), lty=1, lwd=2, bg = "white")
+    legend("topright", legend = c(mylegend, "ECDF of stars"), col=c(solids, "black"), lty=1, lwd=2, bg = "white")
   }
   
   box()
