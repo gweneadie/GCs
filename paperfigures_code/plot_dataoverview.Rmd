@@ -1,0 +1,102 @@
+---
+title: "plot_data_overview"
+author: "Zhiya Lou"
+date: "1/23/2022"
+output: html_document
+---
+Read data - isotropic 
+```{r}
+setwd("~/Desktop/Astro/GCs/PyScripts/mockdata")
+m5r3g1.5phi5.0 <- read.table("m5r3g1.5phi5.0.dat")
+#View(m5r3g1.5phi3.0)
+m5r3g1.5phi5.0= m5r3g1.5phi5.0%>% mutate('Velocity'=sqrt(V4^2+V5^2+V6^2))
+```
+3D- Plots (positions + color=velocity)
+```{r}
+plot_ly(m5r3g1.5phi5.0[1:500,], x = ~V1, y = ~V2, z = ~V3,mode = "markers",  color = ~Velocity,opacity = 0.6,size=4, showscale=TRUE, colorscale = list(c(0, '#AED6F1'), c(1, '#09075D')))%>% layout(title = "m5r3g1.5phi5.0",
+                      scene = list(xaxis=axx,yaxis=axy,zaxis=axz),
+                      legend = leg
+                      )
+```
+
+
+```{r}
+plot_ly(m5r3g1.5phi5.0, x = ~V1, y = ~V2, z = ~V3, color= ~V1^2+V2^2+V3^2,alpha = 0.75,size=1)
+```
+
+```{r}
+plot_ly(m5r3g1.5phi3.0[1:500,], x = ~V1, y = ~V2, z = ~V3, color= ~(sqrt(V4^2+V5^2+V6^2)),size = 10, alpha = 0.75) %>% layout(title = "m5r3g1.5phi3.0",scene = list(xaxis = list(title = 'X'), yaxis = list(title = 'Y'),zaxis = list(title = 'Z')))%>% add_markers()
+```
+
+```{r}
+axx <- list(nticks = 10,
+  range = c(-20,20),title='X')
+axy <- list(nticks = 10,
+  range = c(-25,25),title='Y')
+axz <- list(nticks = 10,
+  range = c(-20,20),title='Z')
+leg=list(title=list(text='Velocity(km/s'))
+
+iso <- plot_ly(m5r3g1.5phi5.0[1:500,], x = ~V1, y = ~V2, z = ~V3,type = "scatter3d", mode = "markers",  opacity = 0.6,marker = list(color= ~Velocity, colorscale = list(c(0, '#AED6F1'), c(1, '#09075D')),size=4, showscale=TRUE,title="km/s"))
+iso <- iso %>% layout(title = "m5r3g1.5phi5.0",
+                      scene = list(xaxis=axx,yaxis=axy,zaxis=axz),
+                      annotations = list(
+                        x = 1.13,
+                        y = 1.05,
+                        text = 'Velocity(km/s)',
+                        xref = 'paper',
+                        yref = 'paper',showarrow = FALSE
+                        ))
+iso
+#save
+saveWidget(iso, "m5r3g1.5phi5.0.html", selfcontained = F, libdir = "lib")
+zip("m5r3g1.5phi5.0.zip", c("m5r3g1.5phi5.0.html", "lib"))
+#htmlwidgets::saveWidget(as_widget(iso), "index.html")
+```
+
+Read Data - anisotropic 
+```{r}
+setwd("~/Desktop/Astro/GCs/PyScripts/mockdata")
+m5r3g1.5phi5.0a0.8 <- read.table("m5r3g1.5phi5.0a0.8.dat")
+```
+
+3D- Plots (positions + color=velocity)
+```{r}
+axx <- list(nticks = 10,
+  range = c(-20,20),title='X')
+axy <- list(nticks = 10,
+  range = c(-25,25),title='Y')
+axz <- list(nticks = 10,
+  range = c(-20,20),title='Z')
+iso <- plot_ly(m5r3g1.5phi5.0a0.8[1:500,], x = ~V1, y = ~V2, z = ~V3, type = "scatter3d", mode = "marker", opacity = 0.6, marker = list(color= ~(sqrt(V4^2+V5^2+V6^2)), colorscale = list(c(0, '#AED6F1'), 
+                                       c(1, '#09075D')), size=4, showscale = TRUE))
+iso <- iso %>% layout(title = "m5r3g1.5phi5.0a0.8",
+                      scene = list(xaxis=axx,yaxis=axy,zaxis=axz),  
+                      annotations = list(x = 1.13,y = 1.05,
+                        text = 'Velocity(km/s)',
+                        xref = 'paper', yref = 'paper',showarrow = FALSE
+                        ))
+iso
+#save 
+saveWidget(iso, "m5r3g1.5phi5.0a0.5.html", selfcontained = F, libdir = "lib")
+zip("m5r3g1.5phi5.0a0.5.zip", c("m5r3g1.5phi5.0a0.5.html", "lib"))
+```
+
+
+------------------------ v r plot 
+```{r}
+vr1 <- mutate(m5r3g1.5phi5.0, r= sqrt(V1^2+ V2^2 +V3^2))
+vr1 <- mutate(vr1, v= sqrt(V4^2+V5^2+V6^2))
+library(ggplot2)
+ggplot(vr1,aes(x=r,y=v))+geom_jitter(alpha=0.1)+coord_cartesian(xlim = c(0,35),ylim = c(0,20))+ ggtitle("m5r3g1.5phi5.0") + xlab("r(pc)") + ylab("v(km/s)")
+```
+
+
+```{r}
+vr2 <- mutate(m5r3g1.5phi5.0a0.8[1:10000,], r= sqrt(V1^2+ V2^2 +V3^2))
+vr2 <- mutate(vr2, v= sqrt(V4^2+V5^2+V6^2))
+ggplot(vr2,aes(x=r,y=v))+geom_jitter(alpha=0.1)+coord_cartesian(xlim = c(0,35),ylim = c(0,20))+ggtitle("m5r3g1.5phi5.0a0.8") + xlab("r(pc)") + ylab("v(km/s)")
+```
+
+
+

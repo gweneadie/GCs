@@ -1,0 +1,341 @@
+---
+title: "bootstrap"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(dplyr)
+library(plotly)
+library(tidyverse)
+library(matrixStats)
+library(scales)
+```
+
+```{r}
+#IS data 
+setwd("~/Desktop/Astro/GCs/PyScripts/mockdata/fits/m5r3g1.5phi5.0a0.2_IS_2.7")
+N2 = 5000
+ISlogp <- read.table('logp.txt')
+names(ISlogp)[1] <- "ISlogp"
+ISlogq <- read.table('logq.txt')
+names(ISlogq)[1] <- "ISlogq"
+ISdata <- cbind(ISlogp,ISlogq) 
+ISdata <- mutate(ISdata, l2 = exp(ISlogp - ISlogq)) #numerical error return l2=0
+ISdata <- mutate(ISdata, logl2 = (ISlogp - ISlogq)) 
+ISdata <- mutate(ISdata, ID = 1:nrow(ISdata))
+#View(ISdata)
+
+#MCMC data
+setwd("~/Desktop/Astro/GCs/PyScripts/mockdata/fits/m5r3g1.5phi3.0_MCMC_2.7_a")
+N1 = 50000
+table1 <-read.table('logp.txt')
+MClogp <- scan('logp.txt')
+MClogq <- scan('logq.txt')
+MCdata <- data.frame(cbind(MClogp,MClogq))
+MCdata <- mutate(MCdata, l1 = exp(MClogp - MClogq))
+MCdata <- mutate(MCdata, logl1 = (MClogp - MClogq))
+MCdata <- mutate(MCdata, ID = 1:nrow(MCdata))
+#View(MCdata)
+```
+
+--- Bridge Bootstrapping ---- Let's Try 1000 times 
+```{r}
+output <- c()
+nIS = 5000
+nsample = 50000
+N1 = 50000
+N2 = 5000
+#use N_eff size
+N1 = N1/(1+17.39163432)  #have to change EFF
+#1--  11.56092429--  11.74946402 --11.71062245
+#2-- 14.34645042-- 15.38637161 --15.15794354
+#3-- 45.95318564 -- 40.18108149
+#4-- 16.54034024 -- 19.1998702 -- 17.39163432
+
+#formula 
+s1 = N1/(N1+N2)
+s2 = N2/(N1+N2)
+
+for (i in 1:1000){
+nsample = 50000
+reMC <- data.frame(sample(seq_len(nrow(MCdata)), nsample, replace =TRUE))
+names(reMC)[1] <- "ID"
+resampMC <- left_join(reMC,MCdata,by="ID")
+reIS <- data.frame(sample(seq_len(nrow(ISdata)), nIS, replace =TRUE))
+names(reIS)[1] <- "ID"
+resampIS <- left_join(reIS,ISdata,by="ID")
+
+logphat = 0
+threshold <- 1e-2 #1e-5
+stop = FALSE
+while (!stop){
+  # compute log(s1 * l2 + s2 * p) using stable log operations
+  logxnum = logSumExp(c(logSumExp(c(log(s1),resampIS$logl2)),logSumExp(c(log(s2),logphat))))
+  # compute log(numerator) using stable log operations
+  lognum = logSumExp(resampIS$logl2 - logxnum) - log(N2)
+  # compute log(s1 * l1 + s2 * p) using stable log operations
+  logxdenom = logSumExp(c(logSumExp(c(log(s1),resampMC$logl1)),logSumExp(c(log(s2),logphat))))
+  # compute log(denominator) using stable log operation
+  logdenom = logSumExp(0 - logxdenom) - log(N1)  #log(1)-
+  
+  logphat1 <- lognum - logdenom
+  stop <- abs(logphat1 - logphat) < threshold
+  logphat <- logphat1
+}
+output <- c(output, logphat)
+}
+
+#BS1 = data_frame(output, indicator = "BS1")
+#BS2 = data_frame(output, indicator = "BS2")
+#BS3 = data_frame(output, indicator = "BS3")
+BS4 = data_frame(output, indicator = "BS4")
+
+```
+
+
+```{r}
+#combine data  
+#permethodBS = bind_rows(BS1, BS2)
+permethodBS2= bind_rows(BS3, BS4)
+```
+#BS 1-2
+```{r}
+ggplot(permethodBS,aes(x=output,color = indicator)) + geom_histogram(binwidth = 0.05,alpha =0.6) + labs( x = "Marginal Likelihood", title ="Bridge Sampling- Bootstrap - Isotropic Data") +coord_cartesian(xlim = c(-7550, -7534)) 
+  #scale_x_continuous(breaks=seq(min(permethod$output),max(permethod$output),1))
+
+```
+#BS 3-4
+```{r}
+ggplot(permethodBS2,aes(x=output,color = indicator)) + geom_histogram(binwidth = 0.05,alpha =0.6) + labs( x = "Marginal Likelihood", title ="Bridge Sampling- Bootstrap - Anisotropic Data") +coord_cartesian(xlim = c(-7578,-7548)) 
+#+ scale_x_continuous(breaks=pretty_breaks(n=10)) 
+  #scale_x_continuous(breaks=seq(min(permethod$output),max(permethod$output),1))
+
+```
+
+
+```{r}
+range(output)
+hist(output,breaks = 15,xlim = c(-7540,-7533), xlab="Marginal Likelihood", ylab = "Count",main = "Histogram of BS Bootstrap: m5r3g1.5phi3.0_a")
+abline(v=mean(output),col=2)
+abline(v=quantile(output, 0.16),col=23)
+abline(v=quantile(output, 0.84),col=23)
+abline(v=quantile(output, c(0.025,0.975)),col="lightblue")
+
+```
+
+```{r}
+summary(output)
+sd(output)
+```
+
+
+```{r}
+#save results 
+#bootstrap100 <- data.frame(output)
+bootstrap100 <- cbind(bootstrap100,output)
+bootstrap100 <- cbind(bootstrap100, c(1:1000))
+names(bootstrap100) <- c("m5r3g1.5phi3.0", "m5r3g1.5phi3.0_a", "m5r3g1.5phi3.0a0.8","m5r3g1.5phi3.0a0.8_a","index")
+```
+
+
+```{r}
+#write_csv(bootstrap100, "bootstrap_result.csv")
+b <- cbind(bootstrap100[,1],bootstrap100[,2],bootstrap100[,3],bootstrap100[,4])
+par(mfrow = c(2,2))
+plot(b[,1])
+plot(b[,2])
+plot(b[,3])
+plot(b[,4])
+```
+```{r}
+sd(b[,1])
+sd(b[,2])
+sd(b[,3])
+sd(b[,4])
+```
+
+
+```{r}
+
+ggplot(data = bootstrap100, aes(x=index, y= m5r3g1.5phi3.0)) + geom_point(alpha =0.6,col = "blue") +geom_hline(yintercept = mean(b[,1]),col= "red")
+ggplot(data = bootstrap100, aes(x=index, y= m5r3g1.5phi3.0_a))  + geom_point(alpha =0.6,col = "blue") +geom_hline(yintercept = mean(b[,2]),col= "red")
+
+
+ggplot(data = bootstrap100, aes(x=index, y= m5r3g1.5phi3.0a0.8)) + geom_point(alpha =0.6,col = "darkgreen") +geom_hline(yintercept = mean(b[,3]),col= "red")
+
+ggplot(data = bootstrap100, aes(x=index, y= m5r3g1.5phi3.0a0.8_a)) + geom_point(alpha =0.6,col = "darkgreen") +geom_hline(yintercept = mean(b[,4]),col= "red") 
+
+```
+
+```{r}
+df <- data.frame(output,number = c(1:100))
+ggplot(df, aes(x=number, y= output))+geom_boxplot()
+```
+
+
+-------------------------------------------------------------------------------
+IS bootstraping 
+```{r}
+#IS data 
+setwd("~/Desktop/Astro/GCs/PyScripts/mockdata/fits/m5r3g1.5phi3.0a0.8_IS_2.7")
+logp <- read.table('logp.txt')
+names(logp)[1] <- "logp"
+logq <- read.table('logq.txt')
+names(logq)[1] <- "logq"
+datais <- cbind(logp,logq)
+#datais <- mutate(datais, NIW= exp((logp - logq)-max(logp - logq)))
+#datais <- mutate(datais, prob = NIW/ sum(NIW))
+datais <- mutate(datais, ID = 1:nrow(datais))
+#View(datais)
+
+```
+
+
+```{r}
+eff <- c()
+const <- c()
+
+for (i in 1:1000){
+re1 <- data.frame(sample(seq_len(nrow(datais)), 5000, replace =TRUE)) #, prob=datais$prob
+names(re1)[1] <- "ID"
+resampIS <- left_join(re1,datais,by="ID")
+eff1 <- sum(resampIS$prob)^2/sum(resampIS$prob^2)
+#logsumexp(logp_IS[idxs] - logq_IS[idxs], axis=1) - np.log(n_IS) 
+# NIW= exp((logp - logq)-max(logp - logq))
+#const1 <- log(sum(resampIS$NIW)/5000)+ max(resampIS$logp -datais$logq)
+const1 <- log(sum(exp((resampIS$logp-resampIS$logq)-max(resampIS$logp-resampIS$logq)))/5000)+ max(resampIS$logp -resampIS$logq)
+eff<- c(eff,eff1)
+const <- c(const,const1)
+}
+
+#IS1 = data_frame(const, indicator = "IS1")
+#IS2 = data_frame(const, indicator = "IS2")
+IS3 = data_frame(const, indicator = "IS3")
+#IS4 = data_frame(const, indicator = "IS4")
+```
+
+
+```{r}
+#combine data  
+#permethodIS = bind_rows(IS1, IS2)
+permethodIS2 = bind_rows(IS3, IS4)
+```
+#IS 1-2
+```{r}
+ggplot(permethodIS,aes(x=const,color = indicator)) + geom_histogram(binwidth = 0.05,alpha =0.6) + labs( x = "Marginal Likelihood", title ="Importance Sampling- Bootstrap - Isotropic Data") +coord_cartesian(xlim = c(-7550, -7534)) 
+```
+#IS 3-4
+```{r}
+ggplot(permethodIS2,aes(x=const,color = indicator)) + geom_histogram(binwidth = 0.05,alpha =0.6) + labs( x = "Marginal Likelihood", title ="Importance Sampling- Bootstrap - Anisotropic Data")  +coord_cartesian(xlim = c(-7578,-7548)) + scale_x_continuous(breaks=pretty_breaks(n=10)) 
+```
+
+
+#orginal bootstrap v1
+```{r}
+plot(eff)
+plot(const)
+abline(h=mean(const),col=2)
+quantile(const)
+hist(const,breaks = 15,xlim = c(-7540,-7533),xlab="Marginal Likelihood", ylab = "Count",main = "Histogram of IS Bootstrap: m5r3g1.5phi3.0_a")
+abline(v=mean(const),col=2)
+abline(v=quantile(const, 0.16),col=23)
+abline(v=quantile(const, 0.84),col=23)
+abline(v=quantile(const, c(0.025,0.975)),col="lightblue")
+
+```
+#case1  -7545.251 -7538.395
+
+#case 3 (-7582.407,-7572.956)
+#case 4 (-7555.010 -7544.069)
+
+
+
+```{r}
+
+#effective sample size
+eff <- sum(datais$prob)^2/sum(datas$prob^2)
+
+const <- log(sum(datais$NIW)/5000)+ max(datas$LogPos -datas$LogPro)
+#normalizing constant, dominate by logp and compute bayes factor by subtracting with another model 
+```
+
+
+-----------------NS bootstraping 
+#just use normal distribution to 
+you can just generate N random realization of the final logZ by just sampling from a normal distribution with Normal(mean=logZ_estimate, stderr=logZ_err).
+```{r}
+#1-- logz: -7547.038 +/-  0.229 
+# v2 -7546.875 +/-  0.114 -- -7621.008 +/-  0.233
+#2 -- -7547.515 +/-  0.233 -- -7621.566 +/-  0.237
+x= rnorm(1000,-7621.008,0.223)
+NS1 = data_frame(x, indicator = "NS1")
+
+x= rnorm(1000,-7621.566,0.237)
+NS2= data_frame(x, indicator = "NS2")
+#combine data  
+permethodNS = bind_rows(NS1, NS2)
+```
+
+```{r}
+ggplot(permethodNS,aes(x=x,color = indicator)) + geom_histogram(binwidth = 0.05,alpha =0.6) + labs( x = "Marginal Likelihood", title ="Nested Sampling- Bootstrap - Isotropic Data") +coord_cartesian(xlim = c(-7550, -7534)) 
+
+```
+
+```{r}
+#3-- logz: -7568.260 +/-  0.286    -7613.522 +/-  0.295
+#4 -- ogz: -7557.431 +/-  0.266       -7603.705 +/-  0.287
+x= rnorm(1000,-7613.522,0.295)
+NS3 = data_frame(x, indicator = "NS3")
+
+x= rnorm(1000,-7603.705,0.287)
+NS4= data_frame(x, indicator = "NS4")
+#combine data  
+permethodNS2 = bind_rows(NS3, NS4)
+```
+
+```{r}
+library(scales)
+ggplot(permethodNS2,aes(x=x,color = indicator)) + geom_histogram(binwidth = 0.05,alpha =0.6) + labs( x = "Marginal Likelihood", title ="Nested Sampling- Bootstrap - Anisotropic Data")  + scale_x_continuous(breaks=pretty_breaks(n=10)) 
+#+coord_cartesian(xlim = c(-7578,-7548))
+#+scale_x_continuous(breaks = pretty(, n = 10))
+#+ scale_x_continuous(breaks = round(seq(-7580, -7548, by = 2),1)) 
+
+
+```
+
+
+
+#------------Bayes Factor and Bootstrapping within 3 methods 
+```{r}
+y = BS1$output -BS2$output
+BS= data_frame(y, indicator = "Bridge Sampling")
+y = NS1$x -NS2$x
+NS= data_frame(y, indicator = "Nested Sampling")
+y = IS1$const -IS2$const
+IS= data_frame(y, indicator = "Importance Sampling")
+Bayes = bind_rows(IS,BS,NS)
+```
+
+```{r}
+ggplot(Bayes,aes(x=y,color = indicator)) + geom_histogram(binwidth = 0.009,alpha =0.05) + labs( x = "Log(Z1/Z2)", title ="Bayes Factor: isotropic model over anisotropic model") + scale_color_manual(values=c("#85C1E9", "#FA533C", "#F7DC6F")) +coord_cartesian(xlim = c(-2,2))
+```
+
+------Bayes Factor 3 4 
+```{r}
+y = BS3$output -BS4$output
+BS2= data_frame(y, indicator = "BS")
+y = NS3$x -NS4$x
+NS2= data_frame(y, indicator = "NS")
+y = IS3$const -IS4$const
+IS2= data_frame(y, indicator = "IS")
+Bayes2 = bind_rows(IS2,BS2,NS2)
+```
+
+```{r}
+
+ggplot(Bayes2,aes(x=y,color = indicator)) + geom_histogram(binwidth = 0.05,alpha =0.1) + labs( x = "Log(Bayes Factor)", title ="Bayes Factor: Anisotropic Data, Isotropic model over Anisotropic model") + scale_color_manual(values=c("#85C1E9", "#FA533C", "#F7DC6F")) +coord_cartesian(xlim = c(-20, 0))  + scale_x_continuous(breaks=pretty_breaks(n=10)) 
+
+```
+
